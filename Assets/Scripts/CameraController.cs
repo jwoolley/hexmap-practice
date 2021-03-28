@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
 public class CameraController : MonoBehaviour {
-    private float moveSpeed = 0.5f;
-    private float scrollSpeed = 10f;
+    private float moveSpeed = 0.25f;
+    private float scrollSpeed = 0.67f;
 
     float horizontalInput;
     float verticalInput;
@@ -20,7 +20,7 @@ public class CameraController : MonoBehaviour {
         }
 
         if (Input.GetAxis("Mouse ScrollWheel") != 0) {
-            transform.position += scrollSpeed * new Vector3(0, 0, Input.GetAxis("Mouse ScrollWheel") / 6.0f);
+            transform.position += scrollSpeed * new Vector3(0, 0, Input.GetAxis("Mouse ScrollWheel"));
         }
     }
 }
