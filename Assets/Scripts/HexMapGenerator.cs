@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HexMapGenerator : MonoBehaviour {
@@ -6,10 +7,13 @@ public class HexMapGenerator : MonoBehaviour {
     GameObject HexTilePrefab;
 
     [SerializeField]
-    int mapHexWidth = 1;
+    int mapHexWidth;
 
     [SerializeField]
-    int mapHexHeight = 4;
+    int mapHexHeight;
+
+    [SerializeField]
+    bool randomizeColors;
 
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
@@ -35,8 +39,7 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     Material getRandomHexColorMaterial() {
-        TileColor tileColorEnum = (TileColor)Random.Range(0, 6);
-        Debug.Log($"Setting hex color to {tileColorEnum}");
+        TileColor tileColorEnum = (TileColor)UnityEngine.Random.Range(0, Enum.GetNames(typeof(TileColor)).Length);
         return referenceHexes[tileColorEnum];
     }
 
@@ -63,7 +66,10 @@ public class HexMapGenerator : MonoBehaviour {
             for (int j = 0; j < mapHexWidth; j++) {
                 float x = j + initialOffsetX;
                 GameObject tempGameObject = Instantiate(HexTilePrefab);
-                tempGameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+
+                if (randomizeColors) {
+                    tempGameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+                }
 
                 if (i % 2 == 0) {
                     tempGameObject.transform.position = new Vector3(x * hexTileOffset_X, y * hexTileOffset_Y, 0);
