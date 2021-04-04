@@ -50,8 +50,8 @@ public class HexMapGenerator : MonoBehaviour {
         referenceHexes.Add(TileColor.RED, getNewMaterialWithColor(Color.red));
         referenceHexes.Add(TileColor.BLUE, getNewMaterialWithColor(Color.blue));
         referenceHexes.Add(TileColor.GREEN, getNewMaterialWithColor(Color.green));
-        referenceHexes.Add(TileColor.PURPLE, getNewMaterialWithColor(new Color(0.6f, 0.4f, 1.0f, 1.0f)));
-        referenceHexes.Add(TileColor.ORANGE, getNewMaterialWithColor(new Color(1.0f, 0.6f, 0.2f, 1.0f)));
+        referenceHexes.Add(TileColor.PURPLE, getNewMaterialWithColor(new Color(0.6f, 0.0f, 1.0f, 1.0f)));
+        referenceHexes.Add(TileColor.ORANGE, getNewMaterialWithColor(new Color(1.0f, 0.5f, 0.0f, 1.0f)));
         referenceHexes.Add(TileColor.YELLOW, getNewMaterialWithColor(Color.yellow));
     }
 
