@@ -1,8 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class MapHex {
-    private readonly MapHex PLACEHOLDER_HEX = new MapHex();
+    static private readonly MapHex PLACEHOLDER_HEX = new ImmutableMapHex();
+
+    private class ImmutableMapHex : MapHex {
+        public ImmutableMapHex() {
+            adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
+        }
+
+        public override void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
+            Debug.LogWarning("Called setAdjacentHex for ImmutableMapHex");
+        }
+    }
 
     public MapHex() {
         adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
@@ -13,14 +24,14 @@ public class MapHex {
     }
 
     public MapHex getAdjacentHex(HexEdgeEnum edge) {
-        return null;
+        return adjacentHexes[edge];
     }
 
     public Boolean hasAdajacentHex(HexEdgeEnum edge) {
         return getAdjacentHex(edge) != PLACEHOLDER_HEX;
     }
 
-    public void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
+    public virtual void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
         if (hex == this) {
             throw new Exception("A map hex can't be set adjacent to itself.");
         }

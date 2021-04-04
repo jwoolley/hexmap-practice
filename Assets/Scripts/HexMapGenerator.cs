@@ -15,6 +15,9 @@ public class HexMapGenerator : MonoBehaviour {
     [SerializeField]
     bool randomizeColors;
 
+    [SerializeField]
+    bool useExperimentalPlacement;
+
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
 
@@ -55,7 +58,16 @@ public class HexMapGenerator : MonoBehaviour {
         referenceHexes.Add(TileColor.YELLOW, getNewMaterialWithColor(Color.yellow));
     }
 
+
     void GenerateHexMap() {
+        if (useExperimentalPlacement) {
+            GenerateHexMapExperimental();
+        } else {
+            GenerateHexMapSimple();
+        }
+    }
+
+    void GenerateHexMapSimple() {
         float initialOffsetX = (1 - mapHexWidth) / 2.0f;
         float initialOffsetY = (1 - mapHexHeight) / 2.0f;
 
@@ -77,6 +89,60 @@ public class HexMapGenerator : MonoBehaviour {
                     tempGameObject.transform.position = new Vector3(x * hexTileOffset_X + hexTileOffset_X / 2.0f, y * hexTileOffset_Y, 0);
                 }
             }
+        }
+    }
+
+    void GenerateHexMapExperimental() {
+        intializeReferenceHexMap();
+
+        UnityMapHex startHex = new UnityMapHex(Instantiate(HexTilePrefab));
+
+        if (randomizeColors) {
+            startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        // TODO: set edges on these (and any new edges that have been "met" upon placement ...?)
+
+        UnityMapHex nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        HexEdgeEnum edge = HexEdgeEnum.LEFT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        edge = HexEdgeEnum.RIGHT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        edge = HexEdgeEnum.TOP_LEFT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        edge = HexEdgeEnum.TOP_RIGHT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        edge = HexEdgeEnum.BOTTOM_LEFT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+        }
+
+        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        edge = HexEdgeEnum.BOTTOM_RIGHT;
+        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
+        if (randomizeColors) {
+            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
         }
     }
 }
