@@ -92,6 +92,23 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
+    // TODO: this should take color enum (and possibly material map) and map it to a material
+    UnityMapHex placeNewHex(UnityMapHex referenceHex, HexEdgeEnum edge, Material material) {
+        UnityMapHex newHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        newHex.gameObject.transform.position = referenceHex.calculateAdajcentPostition(edge);
+        newHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = material;
+        return newHex;
+    }
+
+    readonly TimeTransformer timeTransformer = new TimeTransformerBase();
+    float startZOffset = 2.0f;
+    private void animateHex(UnityMapHex hex) {
+        Vector3 startPos = hex.gameObject.transform.position;
+        hex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, startPos.z + startZOffset);
+        AnimatableMapHex animatableHex = new AnimatableMapHex(hex, timeTransformer);
+        animatableHex.register(StaticAnimationManager.instance);
+    }
+
     void GenerateHexMapExperimental() {
         intializeReferenceHexMap();
 
@@ -101,8 +118,26 @@ public class HexMapGenerator : MonoBehaviour {
             startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
         }
 
+        List<HexEdgeEnum> placements = new List<HexEdgeEnum>{
+            HexEdgeEnum.RIGHT,
+            HexEdgeEnum.BOTTOM_RIGHT,
+            HexEdgeEnum.BOTTOM_LEFT,
+            HexEdgeEnum.LEFT,
+            HexEdgeEnum.TOP_LEFT,
+            HexEdgeEnum.TOP_RIGHT,
+        };
+
+        foreach (HexEdgeEnum placement in placements) {
+            UnityMapHex hex = placeNewHex(startHex, placement, randomizeColors
+                ? getRandomHexColorMaterial()
+                : startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial);
+
+            animateHex(hex);
+        }
+
         // TODO: set edges on these (and any new edges that have been "met" upon placement ...?)
 
+        /*
         UnityMapHex nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
         HexEdgeEnum edge = HexEdgeEnum.LEFT;
         nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
@@ -144,5 +179,6 @@ public class HexMapGenerator : MonoBehaviour {
         if (randomizeColors) {
             nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
         }
+        */
     }
 }
