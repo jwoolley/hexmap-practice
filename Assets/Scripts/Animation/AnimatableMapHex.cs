@@ -22,20 +22,26 @@ public class AnimatableMapHex : IAnimatable {
         elapsedSinceUpdate += Time.deltaTime;
         if (elapsedSinceUpdate >= updateFreq) {
             elapsedSinceUpdate = 0f;
-            float dtNormal = animationManager.getDtNormalized(cycleDuration);
+            float dtNormal = animationManager.getDtNormalized(cycleDuration, startTime);
+            if (dtNormal >= 1.0f) {
+                _isDone = true;
+                dtNormal = 1.0f;
+            }
             float dt = timeTransformer.getAdjustedTime(dtNormal);
             float dz = travelDistance * dt;
-            mapHex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, startPos.z + dz);
+            float newZPos = startPos.z - dz;
+            mapHex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, newZPos);
         }
     }
 
     public void register(AnimationManager animationManager) {
         animationManager.register(this);
         this.animationManager = animationManager;
+        startTime = animationManager.elapsed;
     }
 
     private int getTravelDistance() {
-        return (int)(maxTravelDistance - mapHex.gameObject.transform.position.z);
+        return -(int)(maxTravelDistance - mapHex.gameObject.transform.position.z);
     }
 
     private UnityMapHex mapHex;
@@ -49,8 +55,8 @@ public class AnimatableMapHex : IAnimatable {
     private float travelDistance;
 
     // constants
-    private float maxTravelDistance = 2.0f;
-    private float cycleDuration = 10.0f; // in seconds
+    private float maxTravelDistance = 10.0f;
+    private float cycleDuration = 1.0f; // in seconds
     private float updateFreq = 0.0025f;
-    private int marginWidth = 5;
+    private float startTime;
 }

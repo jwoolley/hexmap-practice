@@ -21,7 +21,10 @@ public class HexMapGenerator : MonoBehaviour {
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
 
+    static HexMapGenerator _generatorInstance;
+
     void Start() {
+        _generatorInstance = this;
         GenerateHexMap();
     }
 
@@ -100,13 +103,58 @@ public class HexMapGenerator : MonoBehaviour {
         return newHex;
     }
 
-    readonly TimeTransformer timeTransformer = new TimeTransformerBase();
-    float startZOffset = 2.0f;
-    private void animateHex(UnityMapHex hex) {
+    //readonly TimeTransformer timeTransformer = new TimeTransformerBase();
+    // readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
+    readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStart4();
+
+    float startZOffset = -12.0f;
+    private AnimatableMapHex animateHex(UnityMapHex hex) {
         Vector3 startPos = hex.gameObject.transform.position;
         hex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, startPos.z + startZOffset);
         AnimatableMapHex animatableHex = new AnimatableMapHex(hex, timeTransformer);
         animatableHex.register(StaticAnimationManager.instance);
+        return animatableHex;
+    }
+
+    class EnqueuedPlacementTile {
+
+        public EnqueuedPlacementTile(UnityMapHex referenceHex, HexEdgeEnum placement) {
+            this.referenceHex = referenceHex;
+            this.placement = placement;
+            this.wasEnqueued = false;
+        }
+
+        public void placeAndAnimateHex() {
+            if (hex == null) {
+                UnityMapHex unityMapHex = _generatorInstance.placeNewHex(referenceHex, placement,
+                    _generatorInstance.randomizeColors
+                    ? _generatorInstance.getRandomHexColorMaterial()
+                    : referenceHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial);
+
+                hex = _generatorInstance.animateHex(unityMapHex);
+                this.wasEnqueued = true;
+            }
+        }
+
+        public bool wasEnqueued { get; private set; }
+        public bool isDone { get { return this.hex != null && this.hex.isDone(); } }
+
+        private UnityMapHex referenceHex;
+        private HexEdgeEnum placement;
+        private AnimatableMapHex hex;
+    }
+
+    List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
+
+    public void Update() {
+        if (enqueuedTiles.Count > 0) {
+            EnqueuedPlacementTile nextTile = enqueuedTiles[0];
+            if (!nextTile.wasEnqueued) {
+                nextTile.placeAndAnimateHex();
+            } else if (nextTile.isDone) {
+                enqueuedTiles.Remove(nextTile);
+            }
+        }
     }
 
     void GenerateHexMapExperimental() {
@@ -128,11 +176,12 @@ public class HexMapGenerator : MonoBehaviour {
         };
 
         foreach (HexEdgeEnum placement in placements) {
-            UnityMapHex hex = placeNewHex(startHex, placement, randomizeColors
-                ? getRandomHexColorMaterial()
-                : startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial);
+            enqueuedTiles.Add(new EnqueuedPlacementTile(startHex, placement));
+            //UnityMapHex hex = placeNewHex(startHex, placement, randomizeColors
+            //    ? getRandomHexColorMaterial()
+            //    : startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial);
 
-            animateHex(hex);
+            //animateHex(hex);
         }
 
         // TODO: set edges on these (and any new edges that have been "met" upon placement ...?)

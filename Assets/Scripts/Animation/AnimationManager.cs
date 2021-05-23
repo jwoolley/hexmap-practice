@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class AnimationManager : MonoBehaviour {
     private List<IAnimatable> animatables = new List<IAnimatable>();
-    private float elapsed;
+    public float elapsed { get; private set; }
     private float velocity;
 
     public void register(IAnimatable animatable) {
@@ -22,22 +22,36 @@ public class AnimationManager : MonoBehaviour {
     }
 
     public virtual void Update() {
-        Debug.Log("AnimationManager.Update called");
+        // Debug.Log("AnimationManager.Update called");
         animatables.ForEach(animatable => {
             animatable.tick();
         });
 
+        elapsed += Time.deltaTime;
+
         animatables.RemoveAll(animatable => animatable.isDone());
     }
 
-    public virtual float getDtNormalized(float cycleDuration) {
-        elapsed += Time.deltaTime;
-
-        if (elapsed > cycleDuration) {
-            elapsed -= cycleDuration;
-            velocity = -velocity; // THIS IS BAD
-        }
-
-        return velocity > 0 ? elapsed / cycleDuration : 1 - elapsed / cycleDuration;
+    public virtual float getDtNormalized(float duration, float startTime=0) {
+        return (elapsed - startTime) / duration;
     }
+
+    //public virtual float getDtNormalized(float cycleDuration, float startTime) {
+    //    if (elapsed > cycleDuration) {
+    //        elapsed -= cycleDuration;
+    //        velocity = -velocity; // THIS IS BAD
+    //    }
+
+    //    return velocity > 0 ? elapsed / cycleDuration : 1 - elapsed / cycleDuration;
+    //}
+
+    //public virtual float getDtNormalizedNew(float startTime) {
+
+    //    if (elapsed > cycleDuration) {
+    //        elapsed -= cycleDuration;
+    //        velocity = -velocity; // THIS IS BAD
+    //    }
+
+    //    return velocity > 0 ? elapsed / cycleDuration : 1 - elapsed / cycleDuration;
+    //}
 }
