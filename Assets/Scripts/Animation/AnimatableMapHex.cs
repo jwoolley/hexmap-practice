@@ -56,7 +56,7 @@ public class AnimatableMapHex : IAnimatable {
 
     // constants
     private float maxTravelDistance = 10.0f;
-    private float cycleDuration = 1.0f; // in seconds
+    private float cycleDuration = 0.75f; // in seconds
     private float updateFreq = 0.0025f;
     private float startTime;
 }

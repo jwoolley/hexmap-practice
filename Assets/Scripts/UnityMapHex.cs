@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class UnityMapHex : MapHex {
 
@@ -57,6 +58,27 @@ public class UnityMapHex : MapHex {
                 return new Vector3(position.x + getSideLength(), position.y - ROOT_3 * getSideLength(), position.z);
             default:
                 return new Vector3();
+        }
+    }
+
+    static public HexMapPosition getAdjacentIndex(HexMapPosition currentIndex, HexEdgeEnum edge) {
+        int x = currentIndex.Item1;
+        int y = currentIndex.Item2;
+        switch (edge) {
+            case HexEdgeEnum.LEFT:
+                return new HexMapPosition(x - 1, y);
+            case HexEdgeEnum.TOP_LEFT:
+                return new HexMapPosition((x % 2 == 0) ? x : x - 1, y - 1);
+            case HexEdgeEnum.TOP_RIGHT:
+                return new HexMapPosition((x % 2 == 0) ? x + 1 : x, y - 1);
+            case HexEdgeEnum.RIGHT:
+                return new HexMapPosition(x + 1, y);
+            case HexEdgeEnum.BOTTOM_LEFT:
+                return new HexMapPosition((x % 2 == 0) ? x : x - 1, y + 1);
+            case HexEdgeEnum.BOTTOM_RIGHT:
+                return new HexMapPosition((x % 2 == 0) ? x + 1 : x, y + 1);
+            default:
+                return currentIndex;
         }
     }
 
