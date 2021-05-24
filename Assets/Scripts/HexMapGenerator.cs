@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HexMapGenerator : MonoBehaviour {
@@ -118,15 +119,13 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     class EnqueuedPlacementTile {
-
-        public EnqueuedPlacementTile(HexPositionPair referenceHexPositionPair, HexEdgeEnum placement) {
-            this.referenceHexPositionPair = referenceHexPositionPair;
+        public EnqueuedPlacementTile(HexPositionPair referenceHexPosition, HexEdgeEnum placement) {
+            this.referenceHexPosition = referenceHexPosition;
             this.placement = placement;
-            this.wasEnqueued = false;
         }
 
         public void placeAndAnimateHex(UnityMapHex[,] positionGrid) {
-            UnityMapHex referenceHex = referenceHexPositionPair.hex;
+            UnityMapHex referenceHex = referenceHexPosition.hex;
 
             if (hex == null) {
                 UnityMapHex unityMapHex = _generatorInstance.placeNewHex(referenceHex, placement,
@@ -137,25 +136,67 @@ public class HexMapGenerator : MonoBehaviour {
                 hex = _generatorInstance.animateHex(unityMapHex);
                 wasEnqueued = true;
 
-                HexMapPosition position = UnityMapHex.getAdjacentIndex(referenceHexPositionPair.position, placement);
+                HexMapPosition position = UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
                 positionGrid[position.x, position.y] = unityMapHex;
             }
         }
 
-        public bool wasEnqueued { get; private set; }
-        public bool isDone { get { return this.hex != null && this.hex.isDone(); } }
+        public virtual bool wasEnqueued { get; private set; }
+        public virtual bool isDone { get { return this.hex != null && this.hex.isDone(); } }
 
-        private HexPositionPair referenceHexPositionPair;
-        private HexEdgeEnum placement;
+        public HexMapPosition getPosition() {
+            return UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
+        }
+
+        
+        public HexEdgeEnum placement { get; private set; }
+        protected HexPositionPair referenceHexPosition;
         private AnimatableMapHex hex;
+    }
+
+    class EnqueuedPlacementTileAnchor : EnqueuedPlacementTile {
+        public EnqueuedPlacementTileAnchor(HexPositionPair referenceHexPosition)
+            : base(referenceHexPosition, HexEdgeEnum.RIGHT) {
+        }
+        public override bool wasEnqueued { get { return true; } }
+        public override bool isDone { get { return true; } }
+    }
+
+    class EnqueuedPlacementTilePlaceholder : EnqueuedPlacementTile {
+        public EnqueuedPlacementTilePlaceholder(HexMapPosition hexMapPosition, HexEdgeEnum placement)
+            : base(new HexPositionPair(null, hexMapPosition), placement) { }
+
+        public HexPositionPair getReferenceHexPositionPair() {
+            return this.referenceHexPosition;
+        }
     }
 
     List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
 
     public void Update() {
         if (readyToGenerateMap && enqueuedTiles.Count > 0) {
+            string positions = String.Join(", ", enqueuedTiles.Select(tile =>
+                $"{{{tile.getPosition().x}, {tile.getPosition().y}}}"
+            ));
+
+            Debug.Log($"Placements: {positions}");
+
             EnqueuedPlacementTile nextTile = enqueuedTiles[0];
+
             if (!nextTile.wasEnqueued) {
+                if (nextTile is EnqueuedPlacementTilePlaceholder) {
+                    HexMapPosition referencePosition =
+                        ((EnqueuedPlacementTilePlaceholder)nextTile).getReferenceHexPositionPair().position;
+
+                    UnityMapHex referenceHex = hexPositionGrid[referencePosition.x, referencePosition.y];
+                    HexMapPosition position = nextTile.getPosition();
+                    nextTile = new EnqueuedPlacementTile(
+                        new HexPositionPair(referenceHex, position),
+                        nextTile.placement
+                    );
+                    enqueuedTiles.RemoveAt(0);
+                    enqueuedTiles.Insert(0, nextTile);
+                }
                 nextTile.placeAndAnimateHex(hexPositionGrid);
             } else if (nextTile.isDone) {
                 enqueuedTiles.Remove(nextTile);
@@ -176,17 +217,27 @@ public class HexMapGenerator : MonoBehaviour {
             this.position = position;
         }
 
+        public void setHex(UnityMapHex hex) {
+            this.hex = hex;
+        }
+
+        public HexPositionPair(HexPositionPair original) : this(original.hex, original.position) { }
         public UnityMapHex hex { get; private set; }
         public HexMapPosition position { get; private set; }
     }
 
     private UnityMapHex[,] hexPositionGrid;
+    private EnqueuedPlacementTile[,] placementGrid;
+
+    private const int NUM_HEXES = 1 + 6 + 12;
 
     private void generatePlacementPlan() {
         UnityMapHex startHex = new UnityMapHex(Instantiate(HexTilePrefab));
 
         HexMapPosition startingPosition = getCenterHexPosition(MAP_MAX_WIDTH, MAP_MAX_HEIGHT);
         hexPositionGrid[startingPosition.x, startingPosition.y] = startHex;
+
+        int hexCount = 1;
 
         if (randomizeColors) {
             startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
@@ -201,10 +252,47 @@ public class HexMapGenerator : MonoBehaviour {
             HexEdgeEnum.TOP_RIGHT,
         };
 
+        placementGrid = new EnqueuedPlacementTile[MAP_MAX_WIDTH, MAP_MAX_HEIGHT];
+        placementGrid[startingPosition.x, startingPosition.y] =
+            new EnqueuedPlacementTileAnchor(new HexPositionPair(startHex, startingPosition));
+
         HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
 
+        // subsequent hexes will be placed relative to these
+        List<EnqueuedPlacementTile> nextHexes = new List<EnqueuedPlacementTile>();
+
         foreach (HexEdgeEnum placement in placements) {
-            enqueuedTiles.Add(new EnqueuedPlacementTile(startHexPositionPair, placement));
+            EnqueuedPlacementTile placementTile = new EnqueuedPlacementTile(startHexPositionPair, placement);
+            enqueuedTiles.Add(placementTile);
+            nextHexes.Add(placementTile);
+
+            // precalculate placement positions to simplify subsequent placements
+            HexMapPosition placementPosition = UnityMapHex.getAdjacentIndex(startingPosition, placement);
+            placementGrid[placementPosition.x, placementPosition.y] = placementTile;
+
+            hexCount++;
+        }
+
+        while (hexCount < NUM_HEXES && nextHexes.Count > 0) {
+            EnqueuedPlacementTile nextReferenceHex = nextHexes[0];
+            nextHexes.RemoveAt(0);
+            foreach (HexEdgeEnum placement in placements) {
+                HexMapPosition newPosition = UnityMapHex.getAdjacentIndex(nextReferenceHex.getPosition(), placement);
+                if (hexCount < NUM_HEXES && placementGrid[newPosition.x, newPosition.y] == null) {
+                    EnqueuedPlacementTile placementTile = new EnqueuedPlacementTilePlaceholder(
+                        nextReferenceHex.getPosition(),
+                        placement);
+
+                    enqueuedTiles.Add(placementTile);
+                    nextHexes.Add(placementTile);
+
+                    // precalculate placement positions to simplify subsequent placements
+                    placementGrid[newPosition.x, newPosition.y] = placementTile;
+                    hexCount++;
+                } else {
+                    Debug.Log($"Hexmap tile already exists at {newPosition.x},{newPosition.y}");
+                }
+            }
         }
     }
 
