@@ -552,6 +552,7 @@ MonoBehaviour:
     type: 3}
   mapHexWidth: 10
   mapHexHeight: 6
+  numHexRingLevels: 12
   randomizeColors: 1
   useExperimentalPlacement: 1
 --- !u!4 &1381169071

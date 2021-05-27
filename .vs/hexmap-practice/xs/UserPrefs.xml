@@ -1,10 +1,11 @@
 ﻿<Properties StartupConfiguration="{A5D15A1B-55E8-0474-87A7-191828B83106}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UnityMapHex.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/HexMapPosition.cs">
     <Files>
-      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="139" Column="58" />
-      <File FileName="Assets/Scripts/Animation/AnimationManager.cs" Line="34" Column="1" />
-      <File FileName="Assets/Scripts/Animation/AnimatableMapHex.cs" Line="23" Column="1" />
-      <File FileName="Assets/Scripts/UnityMapHex.cs" Line="64" Column="34" />
+      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="353" Column="13" />
+      <File FileName="Assets/Scripts/Animation/AnimationManager.cs" Line="35" Column="41" />
+      <File FileName="Assets/Scripts/Animation/AnimatableMapHex.cs" Line="80" Column="1" />
+      <File FileName="Assets/Scripts/UnityMapHex.cs" />
+      <File FileName="Assets/Scripts/HexMapPosition.cs" Line="2" Column="31" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -15,7 +16,7 @@
                 <Node name="Animation" expanded="True">
                   <Node name="TimeTransform" expanded="True" />
                 </Node>
-                <Node name="UnityMapHex.cs" selected="True" />
+                <Node name="HexMapPosition.cs" selected="True" />
               </Node>
             </Node>
           </Node>
@@ -23,17 +24,24 @@
       </Pad>
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State>
-          <Value>typeof (nextTile);</Value>
+          <Value>referenceHexPosition.positio</Value>
+          <Value>placement</Value>
+          <Value>position</Value>
+          <Value>nextReferenceHex.getPosition()</Value>
+          <Value>newPosition</Value>
+          <Value>placementGrid[newPosition.x,newPosition.y]</Value>
+          <Value>Enum.GetValues(typeof(HexEdgeEnum)).Cast&lt;HexEdgeEnum&gt;().ToList()</Value>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="094aefd3-4a4f-455d-8a46-28779db36a60" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="9f5749b5-2f2c-4ae8-9796-bbc0b6dbcf54" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="198" column="1" />
+      <Breakpoint enabled="false" file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="143" column="1" />
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="200" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MultiItemStartupConfigurations />
