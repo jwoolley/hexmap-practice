@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class HexMapGenerator : MonoBehaviour {
@@ -8,13 +7,7 @@ public class HexMapGenerator : MonoBehaviour {
     GameObject HexTilePrefab;
 
     [SerializeField]
-    int mapHexWidth;
-
-    [SerializeField]
-    int mapHexHeight;
-
-    [SerializeField]
-    [Range(1, 24)]
+    [Range(1, 12)]
     int numHexRingLevels;
 
     [SerializeField]
@@ -25,6 +18,17 @@ public class HexMapGenerator : MonoBehaviour {
 
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
+    float startZOffset = -8.0f;
+
+    private Tuple<int, int> mapMaxDimensions;
+
+    List<HexEdgeEnum> _orderedEdges;
+    private UnityMapHex[,] hexPositionGrid;
+    private EnqueuedPlacementTile[,] placementGrid;
+    List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
+
+    readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
+    private bool readyToGenerateMap = false;
 
     static HexMapGenerator _generatorInstance;
 
@@ -75,16 +79,17 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     void GenerateHexMapSimple() {
-        float initialOffsetX = (1 - mapHexWidth) / 2.0f;
-        float initialOffsetY = (1 - mapHexHeight) / 2.0f;
+        const int MAP_HEX_WIDTH_SIMPLE = 12;
+        const int MAP_HEX_HEIGHT_SIMPLE = 8;
+
+        float initialOffsetX = (1 - MAP_HEX_WIDTH_SIMPLE) / 2.0f;
+        float initialOffsetY = (1 - MAP_HEX_HEIGHT_SIMPLE) / 2.0f;
 
         intializeReferenceHexMap();
 
-
-
-        for (int i = 0; i < mapHexHeight; i++) {
+        for (int i = 0; i < MAP_HEX_HEIGHT_SIMPLE; i++) {
             float y = i + initialOffsetY;
-            for (int j = 0; j < mapHexWidth; j++) {
+            for (int j = 0; j < MAP_HEX_WIDTH_SIMPLE; j++) {
                 float x = j + initialOffsetX;
                 GameObject tempGameObject = Instantiate(HexTilePrefab);
 
@@ -109,11 +114,6 @@ public class HexMapGenerator : MonoBehaviour {
         return newHex;
     }
 
-    //readonly TimeTransformer timeTransformer = new TimeTransformerBase();
-    readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
-    // readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStart4();
-
-    float startZOffset = -8.0f;
     private AnimatableMapHex animateHex(UnityMapHex hex) {
         Vector3 startPos = hex.gameObject.transform.position;
         hex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, startPos.z + startZOffset);
@@ -175,8 +175,6 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
-    List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
-
     public void Update() {
         if (readyToGenerateMap && enqueuedTiles.Count > 0) {
             //string positions = String.Join(", ", enqueuedTiles.Select(tile =>
@@ -207,9 +205,6 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
-    static private int DEFAULT_MAP_MAX_WIDTH = 32;
-    static private int DEFAULT_MAP_MAX_HEIGHT = 24;
-
     static HexMapPosition getCenterHexPosition(int mapWidth, int mapHeight) {
         return new HexMapPosition(mapWidth / 2, mapHeight / 2);
     }
@@ -229,16 +224,10 @@ public class HexMapGenerator : MonoBehaviour {
         public HexMapPosition position { get; private set; }
     }
 
-    private UnityMapHex[,] hexPositionGrid;
-    private EnqueuedPlacementTile[,] placementGrid;
-
     // private const int NUM_HEXES = 1 + 6 + 12 + 18;
-
     private int calculateNumHexes() {
         return 1 + (numHexRingLevels * (numHexRingLevels + 1) / 2) * 6;
     }
-
-
 
     private void generatePlacementPlan() {
         int numHexes = calculateNumHexes();
@@ -322,16 +311,6 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
-    List<HexEdgeEnum> _orderedEdges;
-        //Enum.GetValues(typeof(HexEdgeEnum)).Cast<HexEdgeEnum>().ToList();
-
-    //void rotateOrderedEdges() {
-    //    HexEdgeEnum newFirstEdge = _orderedEdges.Last();
-    //    _orderedEdges.RemoveAt(_orderedEdges.Count - 1);
-    //    _orderedEdges.Insert(0, newFirstEdge);
-    //}
-
-
     void rotateOrderedEdges() {
         HexEdgeEnum newLastEdge = _orderedEdges[0];
         _orderedEdges.RemoveAt(0);
@@ -360,11 +339,6 @@ public class HexMapGenerator : MonoBehaviour {
         return adjacentHexes;
     }
 
-    private bool readyToGenerateMap = false;
-
-
-    private Tuple<int, int> mapMaxDimensions;
-
     void GenerateHexMapExperimental(int numLevels) {
 
         intializeReferenceHexMap();
@@ -377,52 +351,6 @@ public class HexMapGenerator : MonoBehaviour {
 
         AnimatableMapHex.calibrateCycleTiming(calculateNumHexes());
 
-        readyToGenerateMap = true;
-
-        // TODO: set edges on these (and any new edges that have been "met" upon placement ...?)
-
-        /*
-        UnityMapHex nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        HexEdgeEnum edge = HexEdgeEnum.LEFT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-
-        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        edge = HexEdgeEnum.RIGHT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-
-        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        edge = HexEdgeEnum.TOP_LEFT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-
-        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        edge = HexEdgeEnum.TOP_RIGHT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-
-        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        edge = HexEdgeEnum.BOTTOM_LEFT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-
-        nextHex = new UnityMapHex(Instantiate(HexTilePrefab));
-        edge = HexEdgeEnum.BOTTOM_RIGHT;
-        nextHex.gameObject.transform.position = startHex.calculateAdajcentPostition(edge);
-        if (randomizeColors) {
-            nextHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
-        */
+        readyToGenerateMap = true;      
     }
 }
