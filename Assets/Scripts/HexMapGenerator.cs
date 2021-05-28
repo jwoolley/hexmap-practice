@@ -27,7 +27,9 @@ public class HexMapGenerator : MonoBehaviour {
     private EnqueuedPlacementTile[,] placementGrid;
     List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
 
-    readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
+    //readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
+    readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStep2();
+
     private bool readyToGenerateMap = false;
 
     static HexMapGenerator _generatorInstance;

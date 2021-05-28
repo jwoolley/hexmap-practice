@@ -1,8 +1,11 @@
 ﻿<Properties StartupConfiguration="{A5D15A1B-55E8-0474-87A7-191828B83106}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/HexMapGenerator.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UnityMapHex.cs">
     <Files>
       <File FileName="Assets/Scripts/UnityMapHex.cs" Line="7" Column="38" />
-      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="9" Column="1" />
+      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="21" Column="32" />
+      <File FileName="Assets/Scripts/Animation/TimeTransform/TimeTransformerSmoothStop4.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Animation/TimeTransform/NewClass.cs" Line="3" Column="67" />
+      <File FileName="Assets/Scripts/Animation/AnimatableMapHex.cs" Line="6" Column="28" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -10,7 +13,10 @@
           <Node name="hexmap-practice" expanded="True">
             <Node name="Assets" expanded="True">
               <Node name="Scripts" expanded="True">
-                <Node name="HexMapGenerator.cs" selected="True" />
+                <Node name="Animation" expanded="True">
+                  <Node name="TimeTransform" expanded="True" />
+                </Node>
+                <Node name="UnityMapHex.cs" selected="True" />
               </Node>
             </Node>
           </Node>
@@ -33,7 +39,9 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="9f5749b5-2f2c-4ae8-9796-bbc0b6dbcf54" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="348" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MultiItemStartupConfigurations />
 </Properties>

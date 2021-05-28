@@ -29,6 +29,8 @@ public class AnimatableMapHex : IAnimatable {
     public void tick() {
         elapsedSinceUpdate += Time.deltaTime;
         totalTimeElapsed = Math.Min(totalTimeElapsed + Time.deltaTime, timeToMaxSpeed);
+        //totalTimeElapsed += Time.deltaTime;
+
         if (elapsedSinceUpdate >= updateFreq) {
             elapsedSinceUpdate = 0f;
             //float dtNormal = animationManager.getDtNormalized(cycleDuration, startTime);
