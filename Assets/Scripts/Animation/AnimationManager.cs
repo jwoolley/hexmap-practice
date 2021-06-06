@@ -35,23 +35,4 @@ public class AnimationManager : MonoBehaviour {
     public virtual float getDtNormalized(float duration, float startTime=0) {
         return (elapsed - startTime) / duration;
     }
-
-    //public virtual float getDtNormalized(float cycleDuration, float startTime) {
-    //    if (elapsed > cycleDuration) {
-    //        elapsed -= cycleDuration;
-    //        velocity = -velocity; // THIS IS BAD
-    //    }
-
-    //    return velocity > 0 ? elapsed / cycleDuration : 1 - elapsed / cycleDuration;
-    //}
-
-    //public virtual float getDtNormalizedNew(float startTime) {
-
-    //    if (elapsed > cycleDuration) {
-    //        elapsed -= cycleDuration;
-    //        velocity = -velocity; // THIS IS BAD
-    //    }
-
-    //    return velocity > 0 ? elapsed / cycleDuration : 1 - elapsed / cycleDuration;
-    //}
 }

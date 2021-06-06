@@ -119,7 +119,7 @@ public class HexMapGenerator : MonoBehaviour {
     private AnimatableMapHex animateHex(UnityMapHex hex) {
         Vector3 startPos = hex.gameObject.transform.position;
         hex.gameObject.transform.position = new Vector3(startPos.x, startPos.y, startPos.z + startZOffset);
-        AnimatableMapHex animatableHex = new AnimatableMapHex(hex, timeTransformer);
+        AnimatableMapHex animatableHex = new AnimatableMapHex(hex, timeTransformer, cycleTiming);
         animatableHex.register(StaticAnimationManager.instance);
         return animatableHex;
     }
@@ -341,6 +341,8 @@ public class HexMapGenerator : MonoBehaviour {
         return adjacentHexes;
     }
 
+    private AnimatableMapHex.AnimatableHexCycleTiming cycleTiming;
+
     void GenerateHexMapExperimental(int numLevels) {
 
         intializeReferenceHexMap();
@@ -351,8 +353,23 @@ public class HexMapGenerator : MonoBehaviour {
 
         generatePlacementPlan();
 
-        AnimatableMapHex.calibrateCycleTiming(calculateNumHexes());
+        float timeToMaxSpeed = Math.Min(
+            Math.Max(
+                numLevels * 1.0f, // calculateNumHexes() * 1.0f,
+                AnimatableMapHex.AnimatableHexCycleTiming.DEFAULT_MIN_TIME_TO_MAX_SPEED
+            ),
+            AnimatableMapHex.AnimatableHexCycleTiming.DEFAULT_MAX_TIME_TO_MAX_SPEED
+        );
+
+
+        cycleTiming = new AnimatableMapHex.AnimatableHexCycleTiming(
+            timeToMaxSpeed,
+            HEX_FALL_DURATION_INITIAL_TIME,
+            HEX_FALL_DURATION_FINAL_TIME);
 
         readyToGenerateMap = true;      
     }
+
+    const float HEX_FALL_DURATION_INITIAL_TIME = 0.67f;
+    const float HEX_FALL_DURATION_FINAL_TIME = 0.33f;
 }
