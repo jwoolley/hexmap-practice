@@ -24,6 +24,8 @@ public class HexMapGenerator : MonoBehaviour {
 
     List<HexEdgeEnum> _orderedEdges;
     private UnityMapHex[,] hexPositionGrid;
+    private static HexTileRegionGroup hexTileRegionGroup;
+
     private EnqueuedPlacementTile[,] placementGrid;
     List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
 
@@ -39,15 +41,6 @@ public class HexMapGenerator : MonoBehaviour {
         GenerateHexMap();
     }
 
-    enum TileColor {
-        RED,
-        BLUE,
-        GREEN,
-        PURPLE,
-        ORANGE,
-        YELLOW
-    };
-
     Material getNewMaterialWithColor(Color color) {
         MeshRenderer meshRenderer = HexTilePrefab.GetComponent<MeshRenderer>();
         Material material = Instantiate(meshRenderer.sharedMaterial);
@@ -55,21 +48,20 @@ public class HexMapGenerator : MonoBehaviour {
         return material;
     }
 
-    Material getRandomHexColorMaterial() {
-        TileColor tileColorEnum = (TileColor)UnityEngine.Random.Range(0, Enum.GetNames(typeof(TileColor)).Length);
-        return referenceHexes[tileColorEnum];
+    static Material getMaterial(HexTileColor color) {
+        return referenceHexes[color];
     }
 
-    Dictionary<TileColor, Material> referenceHexes;
+    static Dictionary<HexTileColor, Material> referenceHexes;
 
     void intializeReferenceHexMap() {
-        referenceHexes = new Dictionary<TileColor, Material>();
-        referenceHexes.Add(TileColor.RED, getNewMaterialWithColor(Color.red));
-        referenceHexes.Add(TileColor.BLUE, getNewMaterialWithColor(Color.blue));
-        referenceHexes.Add(TileColor.GREEN, getNewMaterialWithColor(Color.green));
-        referenceHexes.Add(TileColor.PURPLE, getNewMaterialWithColor(new Color(0.6f, 0.0f, 1.0f, 1.0f)));
-        referenceHexes.Add(TileColor.ORANGE, getNewMaterialWithColor(new Color(1.0f, 0.5f, 0.0f, 1.0f)));
-        referenceHexes.Add(TileColor.YELLOW, getNewMaterialWithColor(Color.yellow));
+        referenceHexes = new Dictionary<HexTileColor, Material>();
+        referenceHexes.Add(HexTileColor.RED, getNewMaterialWithColor(Color.red));
+        referenceHexes.Add(HexTileColor.BLUE, getNewMaterialWithColor(Color.blue));
+        referenceHexes.Add(HexTileColor.GREEN, getNewMaterialWithColor(Color.green));
+        referenceHexes.Add(HexTileColor.PURPLE, getNewMaterialWithColor(new Color(0.6f, 0.0f, 1.0f, 1.0f)));
+        referenceHexes.Add(HexTileColor.ORANGE, getNewMaterialWithColor(new Color(1.0f, 0.5f, 0.0f, 1.0f)));
+        referenceHexes.Add(HexTileColor.YELLOW, getNewMaterialWithColor(Color.yellow));
     }
 
     void GenerateHexMap() {
@@ -96,7 +88,7 @@ public class HexMapGenerator : MonoBehaviour {
                 GameObject tempGameObject = Instantiate(HexTilePrefab);
 
                 if (randomizeColors) {
-                    tempGameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
+                    tempGameObject.GetComponent<MeshRenderer>().sharedMaterial = getMaterial(HexTileColorExtensions.getRandomColor());
                 }
 
                 if (i % 2 == 0) {
@@ -124,6 +116,15 @@ public class HexMapGenerator : MonoBehaviour {
         return animatableHex;
     }
 
+    class HexMapPlacementData {
+        public HexMapPlacementData(UnityMapHex[,] positionGrid, HexTileRegionGroup hexTileRegionGroup) {
+            this.positionGrid = positionGrid;
+            this.hexTileRegionGroup = hexTileRegionGroup;
+        }
+
+        public UnityMapHex[,] positionGrid { get; private set; }
+        public HexTileRegionGroup hexTileRegionGroup { get; private set; }
+    }
     class EnqueuedPlacementTile {
         public EnqueuedPlacementTile(HexPositionPair referenceHexPosition, HexEdgeEnum placement) {
             this.referenceHexPosition = referenceHexPosition;
@@ -134,15 +135,20 @@ public class HexMapGenerator : MonoBehaviour {
             UnityMapHex referenceHex = referenceHexPosition.hex;
 
             if (hex == null) {
+                HexTileColor color = _generatorInstance.randomizeColors
+                    ? HexTileColorExtensions.getRandomColor() : HexTileColor.BLUE;
+
                 UnityMapHex unityMapHex = _generatorInstance.placeNewHex(referenceHex, placement,
-                    _generatorInstance.randomizeColors
-                    ? _generatorInstance.getRandomHexColorMaterial()
-                    : referenceHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial);
+                    getMaterial(color));
 
                 hex = _generatorInstance.animateHex(unityMapHex);
                 wasEnqueued = true;
 
                 HexMapPosition position = UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
+
+                //referenceHex.setAdjacentHex(placement, hex.getHex());
+                hexTileRegionGroup.addHex(referenceHex, hex.getHex(), referenceHexPosition.position, placement, color);
+
                 positionGrid[position.x, position.y] = unityMapHex;
             }
         }
@@ -154,7 +160,13 @@ public class HexMapGenerator : MonoBehaviour {
             return UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
         }
 
-        
+        public UnityMapHex getHex() {
+            if (hex == null) {
+                Debug.LogError("Breakpoint");
+            }
+            return hex.getHex();
+        }
+
         public HexEdgeEnum placement { get; private set; }
         protected HexPositionPair referenceHexPosition;
         private AnimatableMapHex hex;
@@ -231,18 +243,15 @@ public class HexMapGenerator : MonoBehaviour {
         return 1 + (numHexRingLevels * (numHexRingLevels + 1) / 2) * 6;
     }
 
-    private void generatePlacementPlan() {
+    private void generatePlacementPlan(UnityMapHex startHex, HexTileColor startingColor) {
         int numHexes = calculateNumHexes();
-        UnityMapHex startHex = new UnityMapHex(Instantiate(HexTilePrefab));
 
         HexMapPosition startingPosition = getCenterHexPosition(mapMaxDimensions.Item1, mapMaxDimensions.Item2);
         hexPositionGrid[startingPosition.x, startingPosition.y] = startHex;
 
         int hexCount = 1;
 
-        if (randomizeColors) {
-            startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getRandomHexColorMaterial();
-        }
+        startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getMaterial(startingColor);
 
         List<HexEdgeEnum> placements = new List<HexEdgeEnum> {
             HexEdgeEnum.RIGHT,
@@ -272,7 +281,6 @@ public class HexMapGenerator : MonoBehaviour {
             // precalculate placement positions to simplify subsequent placements
             HexMapPosition placementPosition = UnityMapHex.getAdjacentIndex(startingPosition, placement);
             placementGrid[placementPosition.x, placementPosition.y] = placementTile;
-
             hexCount++;
         }
 
@@ -332,15 +340,6 @@ public class HexMapGenerator : MonoBehaviour {
         return _orderedEdges;
     }
 
-    private Dictionary<HexEdgeEnum, UnityMapHex> getAdjacentHexes(HexMapPosition referencePosition, UnityMapHex[,] placements) {
-        Dictionary<HexEdgeEnum, UnityMapHex> adjacentHexes = new Dictionary<HexEdgeEnum, UnityMapHex>();
-        foreach (HexEdgeEnum edge in Enum.GetValues(typeof(HexEdgeEnum))) {
-            HexMapPosition adjacentPosition = UnityMapHex.getAdjacentIndex(referencePosition, edge);
-            adjacentHexes.Add(edge, placements[adjacentPosition.x, adjacentPosition.y]);
-        }
-        return adjacentHexes;
-    }
-
     private AnimatableMapHex.AnimatableHexCycleTiming cycleTiming;
 
     void GenerateHexMapExperimental(int numLevels) {
@@ -351,7 +350,12 @@ public class HexMapGenerator : MonoBehaviour {
 
         hexPositionGrid = new UnityMapHex[mapMaxDimensions.Item1, mapMaxDimensions.Item2];
 
-        generatePlacementPlan();
+        UnityMapHex startHex = new UnityMapHex(Instantiate(HexTilePrefab));
+        HexTileColor startColor = randomizeColors ? HexTileColorExtensions.getRandomColor() : HexTileColor.BLUE;
+
+        hexTileRegionGroup = new HexTileRegionGroup(hexPositionGrid, startHex, startColor);
+
+        generatePlacementPlan(startHex, startColor);
 
         float timeToMaxSpeed = Math.Min(
             Math.Max(

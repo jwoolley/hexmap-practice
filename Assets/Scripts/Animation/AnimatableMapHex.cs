@@ -63,6 +63,10 @@ public class AnimatableMapHex : IAnimatable {
         startTime = animationManager.elapsed;
     }
 
+    public UnityMapHex getHex() {
+        return mapHex;
+    }
+
     private int getTravelDistance() {
         return -(int)(maxTravelDistance - mapHex.gameObject.transform.position.z);
     }
