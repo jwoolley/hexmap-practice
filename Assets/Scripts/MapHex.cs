@@ -22,6 +22,7 @@ public class MapHex {
     }
 
     public MapHex() {
+        this.hexId = assignHexId();
         adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
 
         HexEdgeEnumExtensions.getEnumValues().ForEach(edge => {
@@ -118,4 +119,5 @@ public class MapHex {
     }
 
     private Dictionary<HexEdgeEnum, MapHex> adjacentHexes;
+    public int hexId { get; private set; }
 }

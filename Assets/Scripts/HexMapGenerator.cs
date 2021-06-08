@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class HexMapGenerator : MonoBehaviour {
@@ -41,12 +43,24 @@ public class HexMapGenerator : MonoBehaviour {
         GenerateHexMap();
     }
 
+    static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
+    void OnDrawGizmos() {
+        labelHexes
+            .Where(hex => hex != null)
+            .ToList()
+            .ForEach(hex => {
+                Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}");
+            });
+    }
+
     Material getNewMaterialWithColor(Color color) {
         MeshRenderer meshRenderer = HexTilePrefab.GetComponent<MeshRenderer>();
         Material material = Instantiate(meshRenderer.sharedMaterial);
         material.SetColor("_Color", color);
         return material;
     }
+
+    
 
     static Material getMaterial(HexTileColor color) {
         return referenceHexes[color];
@@ -141,12 +155,14 @@ public class HexMapGenerator : MonoBehaviour {
                 UnityMapHex unityMapHex = _generatorInstance.placeNewHex(referenceHex, placement,
                     getMaterial(color));
 
+                // DEBUG
+                labelHexes.Add(unityMapHex);
+
                 hex = _generatorInstance.animateHex(unityMapHex);
                 wasEnqueued = true;
 
                 HexMapPosition position = UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
 
-                //referenceHex.setAdjacentHex(placement, hex.getHex());
                 hexTileRegionGroup.addHex(referenceHex, hex.getHex(), referenceHexPosition.position, placement, color);
 
                 positionGrid[position.x, position.y] = unityMapHex;
