@@ -13,7 +13,13 @@ public class HexMapGenerator : MonoBehaviour {
     int numHexRingLevels;
 
     [SerializeField]
+    public bool randomizePlacement = false;
+
+    [SerializeField]
     bool randomizeColors;
+
+    [SerializeField]
+    bool randomizeRegionTileColors;
 
     [SerializeField]
     bool useExperimentalPlacement;
@@ -42,9 +48,18 @@ public class HexMapGenerator : MonoBehaviour {
         _generatorInstance = this;
         GenerateHexMap();
     }
+    
+    static public Dictionary<UnityMapHex, String> DEBUG_HEX_LABEL_LIST = new Dictionary<UnityMapHex, String>();
+    static private Color debugGuiLabelColor;
 
     static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
     static readonly private Color guiLabelColor = Color.white;
+
+
+    public static Dictionary<HexTileRegion, Color> REGION_COLORS = new Dictionary<HexTileRegion, Color>();
+    private static Material referenceMaterial;
+
+    // TODO: add Unity Editor directives (so builds aren't broken by this)
     void OnDrawGizmos() {
         GUIStyle labelStyle = new GUIStyle();
         labelStyle.normal.textColor = guiLabelColor;
@@ -54,16 +69,24 @@ public class HexMapGenerator : MonoBehaviour {
             .ToList()
             .ForEach(hex => {
                 HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(hex);
-                    Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
+                Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
+            });
+
+        labelStyle.normal.textColor = debugGuiLabelColor;
+        DEBUG_HEX_LABEL_LIST.Keys
+            .Where(hex => hex != null)
+            .ToList()
+            .ForEach(hex => {
+                Handles.Label(hex.gameObject.transform.position, $"\n\n<b>{DEBUG_HEX_LABEL_LIST[hex]}</b>", labelStyle);
             });
     }
     void OnApplicationQuit() {
         labelHexes.Clear();
+        DEBUG_HEX_LABEL_LIST.Clear();
     }
 
-    Material getNewMaterialWithColor(Color color) {
-        MeshRenderer meshRenderer = HexTilePrefab.GetComponent<MeshRenderer>();
-        Material material = Instantiate(meshRenderer.sharedMaterial);
+    public static Material getNewMaterialWithColor(Color color) {
+        Material material = Instantiate(referenceMaterial);
         material.SetColor("_Color", color);
         return material;
     }
@@ -85,6 +108,9 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     void GenerateHexMap() {
+        // initialize static data
+        referenceMaterial = HexTilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+
         if (useExperimentalPlacement) {
             GenerateHexMapExperimental(numHexRingLevels);
         } else {
@@ -124,7 +150,7 @@ public class HexMapGenerator : MonoBehaviour {
     UnityMapHex placeNewHex(UnityMapHex referenceHex, HexEdgeEnum edge, Material material) {
         UnityMapHex newHex = new UnityMapHex(Instantiate(HexTilePrefab));
         newHex.gameObject.transform.position = referenceHex.calculateAdajcentPostition(edge);
-        newHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = material;
+        newHex.changeMeshMaterial(material);
         return newHex;
     }
 
@@ -226,7 +252,6 @@ public class HexMapGenerator : MonoBehaviour {
                         ((EnqueuedPlacementTilePlaceholder)nextTile).getReferenceHexPositionPair().position;
 
                     UnityMapHex referenceHex = hexPositionGrid[referencePosition.x, referencePosition.y];
-                    HexMapPosition position = nextTile.getPosition();
                     nextTile = new EnqueuedPlacementTile(
                         new HexPositionPair(referenceHex, referencePosition),
                         nextTile.placement
@@ -365,7 +390,6 @@ public class HexMapGenerator : MonoBehaviour {
     private AnimatableMapHex.AnimatableHexCycleTiming cycleTiming;
 
     void GenerateHexMapExperimental(int numLevels) {
-
         intializeReferenceHexMap();
 
         mapMaxDimensions = new Tuple<int, int>(2 * (numLevels + 1) + 1, 2 * (numLevels + 1) + 1);
@@ -392,6 +416,20 @@ public class HexMapGenerator : MonoBehaviour {
             timeToMaxSpeed,
             HEX_FALL_DURATION_INITIAL_TIME,
             HEX_FALL_DURATION_FINAL_TIME);
+
+        // TODO: randomizePlacement doesn't work because calculateAdjacentPosition relies on a reference tile.
+        //       fix this or replace with an equivalent method that calculates position based on placement coordinates
+        //       and an origin tile.
+        if (randomizePlacement) {
+            List<HexMapPosition> debugPositions = enqueuedTiles.Select(tile => tile.getPosition()).ToList();
+            String debugPositionsBeforeString = String.Join(", ", debugPositions);
+;            enqueuedTiles = enqueuedTiles
+                .OrderBy(tile => UnityEngine.Random.value)
+                .ToList();
+            debugPositions = enqueuedTiles.Select(tile => tile.getPosition()).ToList();
+            String debugPositionsAfterString = String.Join(", ", debugPositions);
+            Debug.Log("Positions before after");
+        }
 
         readyToGenerateMap = true;      
     }

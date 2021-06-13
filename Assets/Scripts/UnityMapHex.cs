@@ -19,6 +19,11 @@ public class UnityMapHex : MapHex {
         return getHexTileOffset().x / 2.0f;
     }
 
+    public void changeMeshMaterial(Material material) {
+        gameObject.GetComponent<MeshRenderer>().sharedMaterial = material;
+    }
+
+    // used to determine the world-space position of a hex positioned next to this hex along the specified edge
     public Vector3 calculateAdajcentPostition(HexEdgeEnum edge) {
         Vector3 position = this.gameObject.transform.position;
 
