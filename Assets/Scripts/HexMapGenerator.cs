@@ -44,13 +44,21 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
+    static readonly private Color guiLabelColor = Color.white;
     void OnDrawGizmos() {
+        GUIStyle labelStyle = new GUIStyle();
+        labelStyle.normal.textColor = guiLabelColor;
+        labelStyle.alignment = TextAnchor.LowerCenter;
         labelHexes
             .Where(hex => hex != null)
             .ToList()
             .ForEach(hex => {
-                Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}");
+                HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(hex);
+                    Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
             });
+    }
+    void OnApplicationQuit() {
+        labelHexes.Clear();
     }
 
     Material getNewMaterialWithColor(Color color) {
@@ -59,8 +67,6 @@ public class HexMapGenerator : MonoBehaviour {
         material.SetColor("_Color", color);
         return material;
     }
-
-    
 
     static Material getMaterial(HexTileColor color) {
         return referenceHexes[color];
@@ -362,7 +368,7 @@ public class HexMapGenerator : MonoBehaviour {
 
         intializeReferenceHexMap();
 
-        mapMaxDimensions = new Tuple<int, int>(2 * numLevels + 1, 2 * numLevels + 1);
+        mapMaxDimensions = new Tuple<int, int>(2 * (numLevels + 1) + 1, 2 * (numLevels + 1) + 1);
 
         hexPositionGrid = new UnityMapHex[mapMaxDimensions.Item1, mapMaxDimensions.Item2];
 

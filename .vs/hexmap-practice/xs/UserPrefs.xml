@@ -1,12 +1,13 @@
 ﻿<Properties StartupConfiguration="{A5D15A1B-55E8-0474-87A7-191828B83106}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/HexTileColor.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/HexMapGenerator.cs">
     <Files>
-      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="50" Column="1" />
-      <File FileName="Assets/Scripts/NewMonoBehaviour.cs" Line="12" Column="23" />
-      <File FileName="Assets/Scripts/NewClass.cs" Line="3" Column="1" />
-      <File FileName="Assets/Scripts/MapHex.cs" Line="80" Column="1" />
-      <File FileName="Assets/Scripts/HexEdgeEnum.cs" Line="35" Column="76" />
-      <File FileName="Assets/Scripts/HexTileColor.cs" Line="10" Column="24" />
+      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="183" Column="16" />
+      <File FileName="Assets/Scripts/HexTileRegionGroup.cs" Line="13" Column="60" />
+      <File FileName="Assets/Scripts/MapHex.cs" Line="64" Column="94" />
+      <File FileName="Assets/Scripts/HexEdgeEnum.cs" />
+      <File FileName="Assets/Scripts/HexTileColor.cs" />
+      <File FileName="Assets/Scripts/CameraController.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/HexMapPosition.cs" Line="2" Column="14" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -17,7 +18,7 @@
                 <Node name="Animation" expanded="True">
                   <Node name="TimeTransform" expanded="True" />
                 </Node>
-                <Node name="HexTileColor.cs" selected="True" />
+                <Node name="HexMapGenerator.cs" selected="True" />
               </Node>
             </Node>
           </Node>
@@ -25,24 +26,24 @@
       </Pad>
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State>
-          <Value>referenceHexPosition.positio</Value>
-          <Value>placement</Value>
-          <Value>position</Value>
-          <Value>nextReferenceHex.getPosition()</Value>
-          <Value>newPosition</Value>
-          <Value>placementGrid[newPosition.x,newPosition.y]</Value>
-          <Value>Enum.GetValues(typeof(HexEdgeEnum)).Cast&lt;HexEdgeEnum&gt;().ToList()</Value>
+          <Value>referenceHex.hexId</Value>
+          <Value>newHex.hexId</Value>
+          <Value>debugAdjacentHexes</Value>
+          <Value>newHexColor</Value>
+          <Value>regions</Value>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="9f5749b5-2f2c-4ae8-9796-bbc0b6dbcf54" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="f7f891ab-cc7c-419b-a552-5bd50fb51b9e" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="164" column="1" />
-      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/MapHex.cs" relfile="Assets/Scripts/MapHex.cs" line="45" column="1" />
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexMapGenerator.cs" relfile="Assets/Scripts/HexMapGenerator.cs" line="189" column="1" />
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/MapHex.cs" relfile="Assets/Scripts/MapHex.cs" line="51" column="1" />
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexTileRegionGroup.cs" relfile="Assets/Scripts/HexTileRegionGroup.cs" line="30" column="1" />
+      <Breakpoint file="/Users/jwoolley/Personal/git/hexmap-practice/Assets/Scripts/HexTileRegionGroup.cs" relfile="Assets/Scripts/HexTileRegionGroup.cs" line="36" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MultiItemStartupConfigurations />

@@ -35,5 +35,5 @@ public class HexTileRegion {
 
     public HexTileColor color { get; private set; }
     private HashSet<MapHex> hexes;
-    private int regionId;
+    public int regionId { get; private set; }
 }
