@@ -16,22 +16,40 @@ public class HexTileRegionGroup  {
         if (!this.containsHex(referenceHex)) {
             throw new Exception("Can't find reference hex in region group");
         }
-        referenceHex.setAdjacentHex(edge, newHex, this.placementArray);
+        referenceHex.setAdjacentHex(edge, newHex);
 
         HexMapPosition newHexPosition = UnityMapHex.getAdjacentIndex(referencePosition, edge);
 
         List<MapHex> adjacentHexes = new List<MapHex>(newHex.getAdjacentHexes(newHexPosition, this.placementArray).Values);
 
-        HexTileRegion adoptingRegion = regions.FirstOrDefault(region => {
+        List<HexTileRegion> matchingNeighborRegions = regions.ToList().Where(region => {
             return adjacentHexes.Any(adjacentHex => {
                 return region.containsHex(adjacentHex) && region.color == newHexColor;
             });
-        });
+        }).ToList();
 
-        if (adoptingRegion == null) {
+        //HexTileRegion adoptingRegion = regions.FirstOrDefault(region => {
+        //    return adjacentHexes.Any(adjacentHex => {
+        //        return region.containsHex(adjacentHex) && region.color == newHexColor;
+        //    });
+        //});
+
+        //if (adoptingRegion == null) {
+        //    addNewRegion(newHex, newHexColor);
+        //} else {
+        //    adoptingRegion.addHex(newHex);
+        //}
+
+        if (matchingNeighborRegions.Count == 0) {
             addNewRegion(newHex, newHexColor);
         } else {
+            HexTileRegion adoptingRegion = regions.OrderBy(region => region.regionId).First();
             adoptingRegion.addHex(newHex);
+            matchingNeighborRegions.GetRange(1, matchingNeighborRegions.Count - 1)
+                .ForEach(region => {
+                    adoptingRegion.absorbRegion(region);
+                    this.regions.Remove(region);
+                });
         }
     }
 

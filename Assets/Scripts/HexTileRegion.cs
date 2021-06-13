@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HexTileRegion {
@@ -7,7 +8,6 @@ public class HexTileRegion {
     private static int assignNewRegionId() {
         return regionIdCounter++;
     }
-
 
     public HexTileRegion(MapHex startHex, HexTileColor color) {
         this.color = color;
@@ -21,6 +21,7 @@ public class HexTileRegion {
     }
 
     public void addHex(MapHex hex) {
+        // if adding more logic here, remember that absorbRegion adds hexes too
         this.hexes.Add(hex);
         if (this.getSize() == 1) {
             Debug.Log($"Created new hex region Region_{regionId} of color {color}");
@@ -29,6 +30,15 @@ public class HexTileRegion {
         }
     }
 
+    public void absorbRegion(HexTileRegion otherRegion) {
+        if (otherRegion == this) {
+            Debug.LogWarning($"Region is trying to absorb itself: " + regionId);
+            return;
+        }
+        Debug.Log($"Merging region {otherRegion.regionId} [size={otherRegion.hexes.Count}] into {regionId}");
+        otherRegion.hexes.ToList().ForEach(hex => this.hexes.Add(hex));
+    }
+     
     public int getSize() {
         return this.hexes.Count;
     }

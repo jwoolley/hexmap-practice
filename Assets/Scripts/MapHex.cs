@@ -11,7 +11,7 @@ public class MapHex {
             adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
         }
 
-        protected override void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
+        public override void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
             Debug.LogWarning("Called setAdjacentHex for ImmutableMapHex");
         }
     }
@@ -38,30 +38,7 @@ public class MapHex {
         return getAdjacentHex(edge) != PLACEHOLDER_HEX;
     }
 
-    protected virtual void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
-        if (hex == null) {
-            throw new Exception("A map hex can't be set adjacent to null.");
-        }
-        if (hex == this) {
-            throw new Exception("A map hex can't be set adjacent to itself.");
-        }
-
-        MapHex adjacentHex = adjacentHexes[edge];
-        if (adjacentHex != null && !adjacentHex.Equals(PLACEHOLDER_HEX) && !adjacentHex.Equals(hex)) {
-            Debug.LogWarning($"setAdjacentHex called but hex exists at edge {edge}");
-        }
-
-        MapHex adjacentHexCorrespondingHex = hex.adjacentHexes[edge.getOppositeEdge()];
-        if (adjacentHexCorrespondingHex != null
-            && !adjacentHexCorrespondingHex.Equals(PLACEHOLDER_HEX)
-            && !adjacentHexCorrespondingHex.Equals(this)) {
-            Debug.LogWarning($"setAdjacentHex called other hex has existing hex at edge {edge.getOppositeEdge()}");
-        }
-        adjacentHexes[edge] = hex;
-        hex.adjacentHexes[edge.getOppositeEdge()] = this;
-    }
-
-    public virtual void setAdjacentHex(HexEdgeEnum edge, MapHex hex, MapHex[,] placementArray) {
+    public virtual void setAdjacentHex(HexEdgeEnum edge, MapHex hex) {
         if (hex == null) {
             throw new Exception("A map hex can't be set adjacent to null.");
         }
