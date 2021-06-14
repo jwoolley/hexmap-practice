@@ -86,13 +86,32 @@ public class MapHex {
         }
     }
 
-    public Dictionary<HexEdgeEnum, MapHex> getAdjacentHexes(HexMapPosition referencePosition, MapHex[,] placements) {
+    public static Dictionary<HexEdgeEnum, MapHex> getAdjacentHexes(HexMapPosition referencePosition, MapHex[,] placements) {
         Dictionary<HexEdgeEnum, MapHex> adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
-        HexEdgeEnumExtensions.getEnumValues().ForEach(edge => {
-            HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(referencePosition, edge);
-            adjacentHexes.Add(edge, placements[adjacentPosition.x, adjacentPosition.y]);
-        });
+        HexEdgeEnumExtensions.getEnumValues()
+            .Where(edge => {
+                HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(referencePosition, edge);
+                return adjacentPosition.x < placements.GetLength(0) && adjacentPosition.y < placements.GetLength(1);
+            })
+            .ToList()
+            .ForEach(edge => {
+                HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(referencePosition, edge);
+                adjacentHexes.Add(edge, placements[adjacentPosition.x, adjacentPosition.y]);
+            });
         return adjacentHexes;
+    }
+
+    public static List<HexEdgeEnum> getFreeEdges(HexMapPosition referencePosition, MapHex[,] placements) {
+        Dictionary<HexEdgeEnum, MapHex> adjacentHexes = new Dictionary<HexEdgeEnum, MapHex>();
+        return HexEdgeEnumExtensions.getEnumValues()
+            .Where(edge => {
+                HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(referencePosition, edge);
+                bool isWithinMapBounds =
+                    adjacentPosition.x > 0 && adjacentPosition.x < placements.GetLength(0)
+                    && adjacentPosition.y > 0 && adjacentPosition.y < placements.GetLength(1);
+                return isWithinMapBounds && placements[adjacentPosition.x, adjacentPosition.y] == null;
+            })
+            .ToList();
     }
 
     private Dictionary<HexEdgeEnum, MapHex> adjacentHexes;

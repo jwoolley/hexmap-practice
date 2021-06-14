@@ -38,6 +38,8 @@ public class HexMapGenerator : MonoBehaviour {
             Debug.LogWarning($"Tried to assign material for region with existing material (Region: {region.regionId})");
         }
     }
+
+
     public static void assignHexMaterialFromRegion(HexTileRegion region, UnityMapHex hex) {
         if (region == null) {
             Debug.LogWarning($"Can't find material for region null");
@@ -46,11 +48,9 @@ public class HexMapGenerator : MonoBehaviour {
             Debug.LogWarning($"Can't find material for region {region.regionId}");
             return;
         }
-        hex.changeMeshMaterial(REGION_MATERIALS[region]);
-    }
-
-    public static Material getRegionMaterial(HexTileRegion region) {
-        return REGION_MATERIALS[region];
+        if (_generatorInstance.randomizeRegionTileColors) {
+            hex.changeMeshMaterial(REGION_MATERIALS[region]);
+        }
     }
 
     readonly float hexTileOffset_X = 1.76f;
@@ -101,7 +101,9 @@ public class HexMapGenerator : MonoBehaviour {
                     if (randomizeRegionTileColors) {
                         labelStyle.normal.textColor = referenceHexes[region.color].color;
                     }
-                    Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
+                    Handles.Label(hex.gameObject.transform.position,
+                        $"{hex.hexId}\n[R:{region.regionId}/{region.color.ToString().Substring(0,1)}]",
+                        labelStyle);
                 });
 
             labelStyle.normal.textColor = debugGuiLabelColor;
@@ -354,12 +356,12 @@ public class HexMapGenerator : MonoBehaviour {
         placementGrid[startingPosition.x, startingPosition.y] =
             new EnqueuedPlacementTileAnchor(new HexPositionPair(startHex, startingPosition));
 
-        HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
-        generateFilledAreaPlacement(startHex, startingPosition, numHexes);
+        //generateFilledAreaPlacement(startHex, startingPosition, numHexes);
+        generateRandomConnectedPlacement(startHex, startingPosition, numHexes);
     }
 
     void generateFilledAreaPlacement(UnityMapHex startHex, HexMapPosition startingPosition, int numHexes) {
-              int hexCount = 1;
+        int hexCount = 1;
         HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
 
         // subsequent hexes will be placed relative to these
@@ -410,6 +412,55 @@ public class HexMapGenerator : MonoBehaviour {
                 enqueuedTiles.Add(tile);
                 nextHexes.Add(tile);
             });
+        }
+    }
+
+    void generateRandomConnectedPlacement(UnityMapHex startHex, HexMapPosition startingPosition, int numHexes) {
+        int hexCount = 1;
+        HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
+
+        // subsequent hexes will be placed relative to these
+        List<HexMapPosition> unsurroundedHexes = new List<HexMapPosition>();
+        unsurroundedHexes.Add(startingPosition);
+
+        MapHex[,] claimedPositions = new MapHex[placementGrid.GetLength(0), placementGrid.GetLength(1)];
+        claimedPositions[startingPosition.x, startingPosition.y] = startHex;
+
+        MapHex placeholderHex = startHex;  // THIS IS HACKY, SHOULD JUST NEED ANY HEX HERE
+        while (unsurroundedHexes.Count > 0 && hexCount < numHexes) {
+            // identify neighbor
+            HexMapPosition hostHexPosition = unsurroundedHexes[UnityEngine.Random.Range(0, unsurroundedHexes.Count)];
+            // find a free edge on neighbor
+            List<HexEdgeEnum> freeEdges = MapHex.getFreeEdges(hostHexPosition, claimedPositions);
+            HexEdgeEnum freeEdge = freeEdges[UnityEngine.Random.Range(0, freeEdges.Count)];
+            // enqueue placement next to neighbor
+           
+            EnqueuedPlacementTile placementTile = new EnqueuedPlacementTilePlaceholder(hostHexPosition, freeEdge);
+            HexMapPosition newPosition = MapHex.getAdjacentIndex(hostHexPosition, freeEdge);
+            placementGrid[newPosition.x, newPosition.y] = placementTile;
+            claimedPositions[newPosition.x, newPosition.y] = placeholderHex;
+            enqueuedTiles.Add(placementTile);
+
+            // check neighbors for surrounded (including map edges); if so, remove from unsurrounded hexes
+            MapHex.getAdjacentHexes(newPosition, claimedPositions)
+                .Where(entry => entry.Value != null)
+                .Where(entry => {
+                    // find surrounded neighbors
+                    HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(newPosition, entry.Key);
+                    return MapHex.getFreeEdges(adjacentPosition, claimedPositions).Count == 0;
+                })
+                .ToList()
+                .ForEach(entry => {
+                    // remove from unsurrounded hexes
+                    HexMapPosition adjacentPosition = MapHex.getAdjacentIndex(newPosition, entry.Key);
+                    unsurroundedHexes.RemoveAll(position => position.Equals(adjacentPosition));
+                });
+
+            if (MapHex.getFreeEdges(newPosition, claimedPositions).Count > 0) {
+                unsurroundedHexes.Add(newPosition);
+            }
+            // check self for surrounded; if not, add to unsurrounded hexes
+            hexCount++;
         }
     }
 

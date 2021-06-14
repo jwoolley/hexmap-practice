@@ -22,7 +22,7 @@ public class HexTileRegionGroup  {
 
         HexMapGenerator.DEBUG_HEX_LABEL_LIST.Clear();
 
-        List<MapHex> adjacentHexes = new List<MapHex>(newHex.getAdjacentHexes(newHexPosition, this.placementArray).Values);
+        List<MapHex> adjacentHexes = new List<MapHex>(MapHex.getAdjacentHexes(newHexPosition, this.placementArray).Values);
 
         adjacentHexes
             .Where(hex => hex != null)
