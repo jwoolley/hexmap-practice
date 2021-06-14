@@ -110,7 +110,7 @@ public class HexMapGenerator : MonoBehaviour {
             labelStyle.normal.textColor = guiLabelColor;
             labelStyle.alignment = TextAnchor.LowerCenter;
             labelHexes
-                .Where(hex => hex != null)
+                .Where(hex => hex != null && hex.gameObject != null)
                 .ToList()
                 .ForEach(hex => {
                     HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(hex);
