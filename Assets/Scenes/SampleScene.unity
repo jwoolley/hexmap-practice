@@ -553,8 +553,9 @@ MonoBehaviour:
   numHexRingLevels: 5
   randomizePlacement: 0
   randomizeColors: 1
-  randomizeRegionTileColors: 1
+  randomizeRegionTileColors: 0
   useExperimentalPlacement: 1
+  showHexGuiDebugText: 0
 --- !u!4 &1381169071
 Transform:
   m_ObjectHideFlags: 0

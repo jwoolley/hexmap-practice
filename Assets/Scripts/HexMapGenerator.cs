@@ -336,7 +336,6 @@ public class HexMapGenerator : MonoBehaviour {
         HexMapPosition startingPosition = getCenterHexPosition(mapMaxDimensions.Item1, mapMaxDimensions.Item2);
         hexPositionGrid[startingPosition.x, startingPosition.y] = startHex;
 
-        int hexCount = 1;
 
         startHex.gameObject.GetComponent<MeshRenderer>().sharedMaterial = getMaterial(startingColor);
 
@@ -356,21 +355,27 @@ public class HexMapGenerator : MonoBehaviour {
             new EnqueuedPlacementTileAnchor(new HexPositionPair(startHex, startingPosition));
 
         HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
+        generateFilledAreaPlacement(startHex, startingPosition, numHexes);
+    }
+
+    void generateFilledAreaPlacement(UnityMapHex startHex, HexMapPosition startingPosition, int numHexes) {
+              int hexCount = 1;
+        HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
 
         // subsequent hexes will be placed relative to these
         List<EnqueuedPlacementTile> nextHexes = new List<EnqueuedPlacementTile>();
 
-        foreach (HexEdgeEnum placement in getOrderedEdges()) {
+        List<HexEdgeEnum> edges = getOrderedEdges();
+        foreach (HexEdgeEnum placement in edges) {
             EnqueuedPlacementTile placementTile = new EnqueuedPlacementTile(startHexPositionPair, placement);
             enqueuedTiles.Add(placementTile);
             nextHexes.Add(placementTile);
 
             // precalculate placement positions to simplify subsequent placements
-            HexMapPosition placementPosition = UnityMapHex.getAdjacentIndex(startingPosition, placement);
+            HexMapPosition placementPosition = MapHex.getAdjacentIndex(startingPosition, placement);
             placementGrid[placementPosition.x, placementPosition.y] = placementTile;
             hexCount++;
         }
-
         while (hexCount < numHexes && nextHexes.Count > 0) {
             EnqueuedPlacementTile newReferenceHex = nextHexes[0];
             nextHexes.RemoveAt(0);
