@@ -31,18 +31,6 @@ public class HexTileRegionGroup  {
                 HexMapGenerator.DEBUG_HEX_LABEL_LIST[(UnityMapHex)hex] = $"** ({hex.hexId}) **";
             });
 
-
-        //HexTileRegion adoptingRegion = regions.FirstOrDefault(region => {
-        //    return adjacentHexes.Any(adjacentHex => {
-        //        return region.containsHex(adjacentHex) && region.color == newHexColor;
-        //    });
-        //});
-        //if (adoptingRegion == null) {
-        //    addNewRegion(newHex, newHexColor);
-        //} else {
-        //    adoptingRegion.addHex(newHex);
-        //}
-
         List<HexTileRegion> matchingNeighborRegions = regions.ToList().Where(region => {
             return adjacentHexes.Any(adjacentHex => {
                 return region.containsHex(adjacentHex) && region.color == newHexColor;

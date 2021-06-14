@@ -24,6 +24,9 @@ public class HexMapGenerator : MonoBehaviour {
     [SerializeField]
     bool useExperimentalPlacement;
 
+    [SerializeField]
+    bool showHexGuiDebugText;
+
     // used for randomizeRegionTileColors
     // should use regionId as key instead; leaving as-is now for clarity/waiting until regionId type is changed to uuid
     private static Dictionary<HexTileRegion, Material> REGION_MATERIALS = new Dictionary<HexTileRegion, Material>();
@@ -86,24 +89,29 @@ public class HexMapGenerator : MonoBehaviour {
 
     // TODO: add Unity Editor directives (so builds aren't broken by this)
     void OnDrawGizmos() {
-        GUIStyle labelStyle = new GUIStyle();
-        labelStyle.normal.textColor = guiLabelColor;
-        labelStyle.alignment = TextAnchor.LowerCenter;
-        labelHexes
-            .Where(hex => hex != null)
-            .ToList()
-            .ForEach(hex => {
-                HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(hex);
-                Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
-            });
+        if (showHexGuiDebugText) {
+            GUIStyle labelStyle = new GUIStyle();
+            labelStyle.normal.textColor = guiLabelColor;
+            labelStyle.alignment = TextAnchor.LowerCenter;
+            labelHexes
+                .Where(hex => hex != null)
+                .ToList()
+                .ForEach(hex => {
+                    HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(hex);
+                    if (randomizeRegionTileColors) {
+                        labelStyle.normal.textColor = referenceHexes[region.color].color;
+                    }
+                    Handles.Label(hex.gameObject.transform.position, $"{hex.hexId}\n[R:{region.regionId}]", labelStyle);
+                });
 
-        labelStyle.normal.textColor = debugGuiLabelColor;
-        DEBUG_HEX_LABEL_LIST.Keys
-            .Where(hex => hex != null)
-            .ToList()
-            .ForEach(hex => {
-                Handles.Label(hex.gameObject.transform.position, $"\n\n<b>{DEBUG_HEX_LABEL_LIST[hex]}</b>", labelStyle);
-            });
+            labelStyle.normal.textColor = debugGuiLabelColor;
+            DEBUG_HEX_LABEL_LIST.Keys
+                .Where(hex => hex != null)
+                .ToList()
+                .ForEach(hex => {
+                    Handles.Label(hex.gameObject.transform.position, $"\n\n<b>{DEBUG_HEX_LABEL_LIST[hex]}</b>", labelStyle);
+                });
+        }
     }
     void OnApplicationQuit() {
         labelHexes.Clear();
