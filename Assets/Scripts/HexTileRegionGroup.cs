@@ -31,35 +31,38 @@ public class HexTileRegionGroup  {
                 HexMapGenerator.DEBUG_HEX_LABEL_LIST[(UnityMapHex)hex] = $"** ({hex.hexId}) **";
             });
 
-        HexTileRegion adoptingRegion = regions.FirstOrDefault(region => {
-            return adjacentHexes.Any(adjacentHex => {
-                return region.containsHex(adjacentHex) && region.color == newHexColor;
-            });
-        });
 
-        if (adoptingRegion == null) {
-            addNewRegion(newHex, newHexColor);
-        } else {
-            adoptingRegion.addHex(newHex);
-        }
-
-        //List<HexTileRegion> matchingNeighborRegions = regions.ToList().Where(region => {
+        //HexTileRegion adoptingRegion = regions.FirstOrDefault(region => {
         //    return adjacentHexes.Any(adjacentHex => {
         //        return region.containsHex(adjacentHex) && region.color == newHexColor;
         //    });
-        //}).ToList();
-
-        //if (matchingNeighborRegions.Count == 0) {
+        //});
+        //if (adoptingRegion == null) {
         //    addNewRegion(newHex, newHexColor);
         //} else {
-        //    HexTileRegion adoptingRegion = regions.OrderBy(region => region.regionId).First();
         //    adoptingRegion.addHex(newHex);
-        //    matchingNeighborRegions.GetRange(1, matchingNeighborRegions.Count - 1)
-        //        .ForEach(region => {
-        //            adoptingRegion.absorbRegion(region);
-        //            this.regions.Remove(region);
-        //        });
         //}
+
+        List<HexTileRegion> matchingNeighborRegions = regions.ToList().Where(region => {
+            return adjacentHexes.Any(adjacentHex => {
+                return region.containsHex(adjacentHex) && region.color == newHexColor;
+            });
+        }).ToList();
+
+        if (matchingNeighborRegions.Count == 0) {
+            addNewRegion(newHex, newHexColor);
+        } else {
+            HexTileRegion adoptingRegion = matchingNeighborRegions.OrderBy(region => region.regionId).First();
+            adoptingRegion.addHex(newHex);
+            matchingNeighborRegions.GetRange(1, matchingNeighborRegions.Count - 1)
+                .ForEach(region => {
+                    adoptingRegion.absorbRegion(region);
+                    region.getHexes().ForEach(hex => {
+                        HexMapGenerator.assignHexMaterialFromRegion(adoptingRegion, (UnityMapHex)hex);
+                    });
+                    this.regions.Remove(region);
+                });
+        }
     }
 
     private Dictionary<MapHex, HexTileRegion> hexRegionDict = new Dictionary<MapHex, HexTileRegion>();
@@ -79,7 +82,9 @@ public class HexTileRegionGroup  {
     }
 
     private void addNewRegion(MapHex hex, HexTileColor color) {
-        regions.Add(new HexTileRegion(hex, color));
+        HexTileRegion newRegion = new HexTileRegion(hex, color);
+        regions.Add(newRegion);
+        HexMapGenerator.assignRandomRegionMaterial(newRegion);
     }
 
     private bool containsHex(MapHex hex) {

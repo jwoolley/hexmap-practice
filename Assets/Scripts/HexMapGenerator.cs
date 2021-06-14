@@ -24,6 +24,32 @@ public class HexMapGenerator : MonoBehaviour {
     [SerializeField]
     bool useExperimentalPlacement;
 
+    // used for randomizeRegionTileColors
+    // should use regionId as key instead; leaving as-is now for clarity/waiting until regionId type is changed to uuid
+    private static Dictionary<HexTileRegion, Material> REGION_MATERIALS = new Dictionary<HexTileRegion, Material>();
+    public static void assignRandomRegionMaterial(HexTileRegion region) {
+        if (!REGION_MATERIALS.ContainsKey(region)) {
+            Material material = getNewMaterialWithColor(UnityEngine.Random.ColorHSV());
+            REGION_MATERIALS[region] = material;
+        } else {
+            Debug.LogWarning($"Tried to assign material for region with existing material (Region: {region.regionId})");
+        }
+    }
+    public static void assignHexMaterialFromRegion(HexTileRegion region, UnityMapHex hex) {
+        if (region == null) {
+            Debug.LogWarning($"Can't find material for region null");
+            return;
+        } else if (!REGION_MATERIALS.ContainsKey(region)) {
+            Debug.LogWarning($"Can't find material for region {region.regionId}");
+            return;
+        }
+        hex.changeMeshMaterial(REGION_MATERIALS[region]);
+    }
+
+    public static Material getRegionMaterial(HexTileRegion region) {
+        return REGION_MATERIALS[region];
+    }
+
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
     float startZOffset = -8.0f;
@@ -56,7 +82,6 @@ public class HexMapGenerator : MonoBehaviour {
     static readonly private Color guiLabelColor = Color.white;
 
 
-    public static Dictionary<HexTileRegion, Color> REGION_COLORS = new Dictionary<HexTileRegion, Color>();
     private static Material referenceMaterial;
 
     // TODO: add Unity Editor directives (so builds aren't broken by this)
@@ -181,8 +206,9 @@ public class HexMapGenerator : MonoBehaviour {
             UnityMapHex referenceHex = referenceHexPosition.hex;
 
             if (hex == null) {
-                HexTileColor color = _generatorInstance.randomizeColors
-                    ? HexTileColorExtensions.getRandomColor() : HexTileColor.BLUE;
+                HexTileColor color =
+                  (_generatorInstance.randomizeColors
+                    ? HexTileColorExtensions.getRandomColor() : HexTileColor.BLUE);
 
                 UnityMapHex unityMapHex = _generatorInstance.placeNewHex(referenceHex, placement,
                     getMaterial(color));
@@ -196,6 +222,12 @@ public class HexMapGenerator : MonoBehaviour {
                 HexMapPosition position = UnityMapHex.getAdjacentIndex(referenceHexPosition.position, placement);
 
                 hexTileRegionGroup.addHex(referenceHex, hex.getHex(), referenceHexPosition.position, placement, color);
+
+                // this is done after hexTileRegionGroup.addHex since it's needed to assign the region
+                if (_generatorInstance.randomizeRegionTileColors) {
+                    HexTileRegion region = hexTileRegionGroup.getRegionContainingHex(unityMapHex);
+                    assignHexMaterialFromRegion(region, unityMapHex);
+                }
 
                 positionGrid[position.x, position.y] = unityMapHex;
             }

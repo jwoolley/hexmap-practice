@@ -43,6 +43,10 @@ public class HexTileRegion {
         return this.hexes.Count;
     }
 
+    public List<MapHex> getHexes() {
+        return new List<MapHex>(hexes);
+    }
+
     public HexTileColor color { get; private set; }
     private HashSet<MapHex> hexes;
     public int regionId { get; private set; }

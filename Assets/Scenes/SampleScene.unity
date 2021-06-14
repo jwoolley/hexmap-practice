@@ -553,6 +553,7 @@ MonoBehaviour:
   numHexRingLevels: 5
   randomizePlacement: 0
   randomizeColors: 1
+  randomizeRegionTileColors: 1
   useExperimentalPlacement: 1
 --- !u!4 &1381169071
 Transform:
