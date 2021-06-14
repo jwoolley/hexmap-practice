@@ -550,9 +550,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HexTilePrefab: {fileID: 9065673002126075789, guid: c66eeaca2bb7f4e7e8f08cfe23775c02,
     type: 3}
-  numHexRingLevels: 5
-  tilePlacementMode: 0
-  randomizePlacement: 1
+  numHexRingLevels: 9
+  tilePlacementMode: 1
+  freeEdgeWeight: 4
   randomizeColors: 1
   randomizeRegionTileColors: 0
   useExperimentalPlacement: 1

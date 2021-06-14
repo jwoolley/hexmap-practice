@@ -16,10 +16,17 @@ public class HexMapGenerator : MonoBehaviour {
     TilePlacementMode tilePlacementMode = TilePlacementMode.RANDOM_CONNECTED;
 
     [SerializeField]
-    public bool randomizePlacement = false;
+    [Range(1.0f, 5.0f)]
+    float freeEdgeWeight = 1.0f;
 
     [SerializeField]
-    bool randomizeColors;
+    [Range(0, 5)]
+    int bufferCellsForRandMode = 0;
+
+    private bool randomizePlacement = false;
+
+    [SerializeField]
+    bool randomizeColors = true;
 
     [SerializeField]
     bool randomizeRegionTileColors;
@@ -432,6 +439,70 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
+    private enum HostSelectionMode {
+        PURELY_RANDOM,
+        WEIGHT_BY_EDGES,
+    }
+    private HostSelectionMode hostSelectionMode = HostSelectionMode.WEIGHT_BY_EDGES;
+
+    private HexMapPosition selectHostPosition(List<HexMapPosition> unsurroundedHexes, MapHex[,] claimedPositions) {
+        switch (hostSelectionMode) {
+            case HostSelectionMode.WEIGHT_BY_EDGES:
+                Dictionary<int, List<HexMapPosition>> edgeCounts = new Dictionary<int, List<HexMapPosition>>();
+                for (int i = 1; i <= 6; i++) {
+                    edgeCounts[i] = new List<HexMapPosition>();
+                }
+                unsurroundedHexes.ForEach(position => {
+                    List<HexEdgeEnum> freeHexes = MapHex.getFreeEdges(position, claimedPositions);
+                    if (freeHexes.Count > 0) {
+                        edgeCounts[freeHexes.Count].Add(position);
+                    }
+                });
+
+                //List<List<HexMapPosition>> candidateHostLists = edgeCounts.Keys.ToList()
+                //    .Where(count => edgeCounts[count].Count > 0)
+                //    .Select(count => edgeCounts[count])
+                //    .ToList();
+
+                //edgeCounts.Keys.ToList()
+                //    .Where(count => edgeCounts[count].Count > 0 && count > 3)
+                //    .ToList()
+                //    .ForEach(count => {
+                //        candidateHostLists.Add(edgeCounts[count]);
+                //        candidateHostLists.Add(edgeCounts[count]);
+                //        if (count > 4) {
+                //            candidateHostLists.Add(edgeCounts[count]);
+                //        }
+                //    });
+
+                //List<List<HexMapPosition>> candidateHostLists = new List<List<HexMapPosition>>();
+                //List<HexMapPosition> hostList = candidateHostLists[UnityEngine.Random.Range(0, candidateHostLists.Count)];
+                //return hostList[UnityEngine.Random.Range(0, hostList.Count)];
+
+                List<HexMapPosition> candidatePositions = new List<HexMapPosition>();
+                float edgeCountWeight = freeEdgeWeight;
+                edgeCounts.Keys.ToList()
+                    .ForEach(count => {
+                        edgeCounts[count].ForEach(position => {
+                            int numCopies = Math.Max((int)Math.Pow(count, edgeCountWeight), 1);
+                            candidatePositions.AddRange(Enumerable.Repeat(position, numCopies));
+                        });
+                    });
+
+                    return candidatePositions[UnityEngine.Random.Range(0, candidatePositions.Count)];
+
+            case HostSelectionMode.PURELY_RANDOM:
+            default:
+                return unsurroundedHexes[UnityEngine.Random.Range(0, unsurroundedHexes.Count)];
+        }
+    }
+
+    private HexEdgeEnum selectPlacementEdge(HexMapPosition hostPosition, MapHex[,] claimedPositions) {
+        List<HexEdgeEnum> freeEdges = MapHex.getFreeEdges(hostPosition, claimedPositions);
+        HexEdgeEnum freeEdge = freeEdges[UnityEngine.Random.Range(0, freeEdges.Count)];
+        return freeEdge;
+    }
+
     void generateRandomConnectedPlacement(UnityMapHex startHex, HexMapPosition startingPosition, int numHexes) {
         int hexCount = 1;
         HexPositionPair startHexPositionPair = new HexPositionPair(startHex, startingPosition);
@@ -446,10 +517,9 @@ public class HexMapGenerator : MonoBehaviour {
         MapHex placeholderHex = startHex;  // THIS IS HACKY, SHOULD JUST NEED ANY HEX HERE
         while (unsurroundedHexes.Count > 0 && hexCount < numHexes) {
             // identify neighbor
-            HexMapPosition hostHexPosition = unsurroundedHexes[UnityEngine.Random.Range(0, unsurroundedHexes.Count)];
+            HexMapPosition hostHexPosition = selectHostPosition(unsurroundedHexes, claimedPositions);
             // find a free edge on neighbor
-            List<HexEdgeEnum> freeEdges = MapHex.getFreeEdges(hostHexPosition, claimedPositions);
-            HexEdgeEnum freeEdge = freeEdges[UnityEngine.Random.Range(0, freeEdges.Count)];
+            HexEdgeEnum freeEdge = selectPlacementEdge(hostHexPosition, claimedPositions);
             // enqueue placement next to neighbor
            
             EnqueuedPlacementTile placementTile = new EnqueuedPlacementTilePlaceholder(hostHexPosition, freeEdge);
@@ -505,7 +575,17 @@ public class HexMapGenerator : MonoBehaviour {
     void GenerateHexMapExperimental(int numLevels) {
         intializeReferenceHexMap();
 
-        mapMaxDimensions = new Tuple<int, int>(2 * (numLevels + 1) + 1, 2 * (numLevels + 1) + 1);
+        switch (tilePlacementMode) {
+            case TilePlacementMode.RANDOM_CONNECTED:
+                int extraCells = bufferCellsForRandMode;
+                int cellsPerAxis = 2 * (numLevels + extraCells + 1) + 1;
+                mapMaxDimensions = new Tuple<int, int>(cellsPerAxis, cellsPerAxis);
+                break;
+            case TilePlacementMode.FILLED:
+            default:
+                mapMaxDimensions = new Tuple<int, int>(2 * (numLevels + 1) + 1, 2 * (numLevels + 1) + 1);
+                break;
+        }
 
         hexPositionGrid = new UnityMapHex[mapMaxDimensions.Item1, mapMaxDimensions.Item2];
 
