@@ -13,6 +13,9 @@ public class HexMapGenerator : MonoBehaviour {
     int numHexRingLevels;
 
     [SerializeField]
+    TilePlacementMode tilePlacementMode = TilePlacementMode.RANDOM_CONNECTED;
+
+    [SerializeField]
     public bool randomizePlacement = false;
 
     [SerializeField]
@@ -26,6 +29,11 @@ public class HexMapGenerator : MonoBehaviour {
 
     [SerializeField]
     bool showHexGuiDebugText;
+
+    enum TilePlacementMode {
+        FILLED,
+        RANDOM_CONNECTED
+    }
 
     // used for randomizeRegionTileColors
     // should use regionId as key instead; leaving as-is now for clarity/waiting until regionId type is changed to uuid
@@ -89,6 +97,7 @@ public class HexMapGenerator : MonoBehaviour {
 
     // TODO: add Unity Editor directives (so builds aren't broken by this)
     void OnDrawGizmos() {
+        #if UNITY_EDITOR
         if (showHexGuiDebugText) {
             GUIStyle labelStyle = new GUIStyle();
             labelStyle.normal.textColor = guiLabelColor;
@@ -114,6 +123,7 @@ public class HexMapGenerator : MonoBehaviour {
                     Handles.Label(hex.gameObject.transform.position, $"\n\n<b>{DEBUG_HEX_LABEL_LIST[hex]}</b>", labelStyle);
                 });
         }
+        #endif
     }
     void OnApplicationQuit() {
         labelHexes.Clear();
@@ -356,8 +366,15 @@ public class HexMapGenerator : MonoBehaviour {
         placementGrid[startingPosition.x, startingPosition.y] =
             new EnqueuedPlacementTileAnchor(new HexPositionPair(startHex, startingPosition));
 
-        //generateFilledAreaPlacement(startHex, startingPosition, numHexes);
-        generateRandomConnectedPlacement(startHex, startingPosition, numHexes);
+        switch (tilePlacementMode) {
+            case TilePlacementMode.RANDOM_CONNECTED:
+                generateRandomConnectedPlacement(startHex, startingPosition, numHexes);
+                break;
+            case TilePlacementMode.FILLED:
+            default:
+                generateFilledAreaPlacement(startHex, startingPosition, numHexes);
+                break;
+        }
     }
 
     void generateFilledAreaPlacement(UnityMapHex startHex, HexMapPosition startingPosition, int numHexes) {
