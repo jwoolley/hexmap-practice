@@ -163,6 +163,8 @@ public class HexMapGenerator : MonoBehaviour {
         // initialize static data
         referenceMaterial = HexTilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
 
+        UnityMapHex.initializeReferenceMesh(HexTilePrefab.GetComponent<MeshRenderer>());
+
         if (useExperimentalPlacement) {
             GenerateHexMapExperimental(numHexRingLevels);
         } else {
