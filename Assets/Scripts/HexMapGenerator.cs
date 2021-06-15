@@ -445,6 +445,15 @@ public class HexMapGenerator : MonoBehaviour {
         PURELY_RANDOM,
         WEIGHT_BY_EDGES,
     }
+    // for v3 mode; can't define an inline class! so here we are
+    class CandidatePosition {
+        public CandidatePosition(HexMapPosition position, float probability) {
+            this.position = position;
+            this.probability = probability;
+        }
+        public HexMapPosition position { get; private set; }
+        public float probability { get; private set; }
+    }
     private HostSelectionMode hostSelectionMode = HostSelectionMode.WEIGHT_BY_EDGES;
 
     private HexMapPosition selectHostPosition(List<HexMapPosition> unsurroundedHexes, MapHex[,] claimedPositions) {
@@ -461,41 +470,34 @@ public class HexMapGenerator : MonoBehaviour {
                     }
                 });
 
-                //List<List<HexMapPosition>> candidateHostLists = edgeCounts.Keys.ToList()
-                //    .Where(count => edgeCounts[count].Count > 0)
-                //    .Select(count => edgeCounts[count])
-                //    .ToList();
-
-                //edgeCounts.Keys.ToList()
-                //    .Where(count => edgeCounts[count].Count > 0 && count > 3)
-                //    .ToList()
-                //    .ForEach(count => {
-                //        candidateHostLists.Add(edgeCounts[count]);
-                //        candidateHostLists.Add(edgeCounts[count]);
-                //        if (count > 4) {
-                //            candidateHostLists.Add(edgeCounts[count]);
-                //        }
-                //    });
-
-                //List<List<HexMapPosition>> candidateHostLists = new List<List<HexMapPosition>>();
-                //List<HexMapPosition> hostList = candidateHostLists[UnityEngine.Random.Range(0, candidateHostLists.Count)];
-                //return hostList[UnityEngine.Random.Range(0, hostList.Count)];
-
-                List<HexMapPosition> candidatePositions = new List<HexMapPosition>();
                 float edgeCountWeight = freeEdgeWeight;
+                float[] probabilities = new float[6];
+                for (int i = 0; i < 6; i++) {
+                    probabilities[i] = (float)Math.Pow(i, edgeCountWeight);
+                }
+
+                List<CandidatePosition> candidatePositions = new List<CandidatePosition>();
+                float totalProbabilityRange = 0.0f;
                 edgeCounts.Keys.ToList()
                     .ForEach(count => {
                         edgeCounts[count].ForEach(position => {
-                            int numCopies = Math.Max((int)Math.Pow(count, edgeCountWeight), 1);
-                            candidatePositions.AddRange(Enumerable.Repeat(position, numCopies));
+                            candidatePositions.Add(new CandidatePosition(position, probabilities[count - 1] + totalProbabilityRange));
+                            totalProbabilityRange += probabilities[count - 1];
                         });
                     });
 
-                    return candidatePositions[UnityEngine.Random.Range(0, candidatePositions.Count)];
+                float dieRoll = UnityEngine.Random.Range(0, totalProbabilityRange);
+      
+                for (int i = 0; i < candidatePositions.Count; i++) {
+                   if (candidatePositions[i].probability > dieRoll) {
+                        return candidatePositions[i].position;
+                    }
+                }
+                return candidatePositions.Last().position; // this shouldn't happen
 
             case HostSelectionMode.PURELY_RANDOM:
-            default:
-                return unsurroundedHexes[UnityEngine.Random.Range(0, unsurroundedHexes.Count)];
+                default:
+                    return unsurroundedHexes[UnityEngine.Random.Range(0, unsurroundedHexes.Count)];
         }
     }
 
