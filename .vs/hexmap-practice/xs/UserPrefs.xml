@@ -1,28 +1,27 @@
 ﻿<Properties StartupConfiguration="{A5D15A1B-55E8-0474-87A7-191828B83106}|">
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/HexMapGenerator.cs">
     <Files>
-      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="503" Column="25" />
-      <File FileName="Assets/Scripts/HexMapPosition.cs" />
-      <File FileName="Assets/Scripts/HexTileRegionGroup.cs" />
-      <File FileName="Assets/Scripts/HexTileRegion.cs" />
-      <File FileName="Assets/Scripts/MapHex.cs" />
-      <File FileName="Assets/Scripts/HexEdgeEnum.cs" />
-      <File FileName="Assets/Scripts/HexTileColor.cs" />
-      <File FileName="Assets/Scripts/CameraController.cs" />
-      <File FileName="Assets/Scripts/UnityMapHex.cs" />
+      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="364" Column="87" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="hexmap-practice" expanded="True">
             <Node name="Assets" expanded="True" selected="True">
-              <Node name="Scripts" expanded="True">
-                <Node name="Animation" expanded="True">
-                  <Node name="TimeTransform" expanded="True" />
-                </Node>
+              <Node name="OutlineEffect" expanded="True">
+                <Node name="OutlineEffect" expanded="True" />
               </Node>
+              <Node name="Scripts" expanded="True" />
             </Node>
           </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>candidatePositions</Value>
+          <Value>dieRoll</Value>
+          <Value>totalProbabilityRange</Value>
+          <Value>i</Value>
         </State>
       </Pad>
     </Pads>

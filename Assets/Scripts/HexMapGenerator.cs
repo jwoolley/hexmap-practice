@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using cakeslice;
 
 public class HexMapGenerator : MonoBehaviour {
     [SerializeField]
     GameObject HexTilePrefab;
 
     [SerializeField]
-    [Range(1, 12)]
+    [Range(1, 16)]
     int numHexRingLevels;
 
     [SerializeField]
@@ -298,34 +299,155 @@ public class HexMapGenerator : MonoBehaviour {
         }
     }
 
+    private UnityMapHex selectedHexTile;
+    bool showHexSelector = false;
+    private HexEdgeEnum defaultAboveSelection = HexEdgeEnum.TOP_LEFT;
+    private HexEdgeEnum defaultBelowSelection = HexEdgeEnum.BOTTOM_RIGHT;
+
+    private void swapAboveBelowSelectionDefaults() {
+        defaultAboveSelection = (defaultAboveSelection == HexEdgeEnum.TOP_LEFT)
+            ? HexEdgeEnum.TOP_RIGHT : HexEdgeEnum.TOP_LEFT;
+        defaultBelowSelection = (defaultBelowSelection == HexEdgeEnum.BOTTOM_LEFT)
+            ? HexEdgeEnum.BOTTOM_RIGHT : HexEdgeEnum.BOTTOM_LEFT;
+    }
+
     public void Update() {
-        if (readyToGenerateMap && enqueuedTiles.Count > 0) {
-            //string positions = String.Join(", ", enqueuedTiles.Select(tile =>
-            //    $"{{{tile.getPosition().x}, {tile.getPosition().y}}}"
-            //));
-            // Debug.Log($"Placements: {positions}");
+        if (readyToGenerateMap) {
+            if (enqueuedTiles.Count > 0) {
+                //string positions = String.Join(", ", enqueuedTiles.Select(tile =>
+                //    $"{{{tile.getPosition().x}, {tile.getPosition().y}}}"
+                //));
+                // Debug.Log($"Placements: {positions}");
 
-            EnqueuedPlacementTile nextTile = enqueuedTiles[0];
+                EnqueuedPlacementTile nextTile = enqueuedTiles[0];
 
-            if (!nextTile.wasEnqueued) {
-                if (nextTile is EnqueuedPlacementTilePlaceholder) {
-                    HexMapPosition referencePosition =
-                        ((EnqueuedPlacementTilePlaceholder)nextTile).getReferenceHexPositionPair().position;
+                if (!nextTile.wasEnqueued) {
+                    if (nextTile is EnqueuedPlacementTilePlaceholder) {
+                        HexMapPosition referencePosition =
+                            ((EnqueuedPlacementTilePlaceholder)nextTile).getReferenceHexPositionPair().position;
 
-                    UnityMapHex referenceHex = hexPositionGrid[referencePosition.x, referencePosition.y];
-                    nextTile = new EnqueuedPlacementTile(
-                        new HexPositionPair(referenceHex, referencePosition),
-                        nextTile.placement
-                    );
-                    enqueuedTiles.RemoveAt(0);
-                    enqueuedTiles.Insert(0, nextTile);
+                        UnityMapHex referenceHex = hexPositionGrid[referencePosition.x, referencePosition.y];
+                        nextTile = new EnqueuedPlacementTile(
+                            new HexPositionPair(referenceHex, referencePosition),
+                            nextTile.placement
+                        );
+                        enqueuedTiles.RemoveAt(0);
+                        enqueuedTiles.Insert(0, nextTile);
+                    }
+                    nextTile.placeAndAnimateHex(hexPositionGrid);
+                } else if (nextTile.isDone) {
+                    enqueuedTiles.Remove(nextTile);
                 }
-                nextTile.placeAndAnimateHex(hexPositionGrid);
-            } else if (nextTile.isDone) {
-                enqueuedTiles.Remove(nextTile);
+            }
+
+            // (SLOPPY) INPUT HANDLING
+            if (Input.GetKeyDown(KeyCode.G)) {
+                Debug.Log("Pressed G");
+                showHexGuiDebugText = !showHexGuiDebugText;
+            }
+
+
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                showHexSelector = !showHexSelector;
+                Outline outline = getOutline(selectedHexTile);
+                if (outline != null) {
+                    outline.enabled = showHexSelector;
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.I)) {
+                Debug.Log("Pressed I");
+                if (showHexSelector) {
+                    MapHex newSelection = selectedHexTile.getAdjacentHex(defaultAboveSelection);
+                    if (newSelection == null) {
+                        newSelection = selectedHexTile.getAdjacentHex((defaultAboveSelection == HexEdgeEnum.TOP_LEFT)
+                            ? HexEdgeEnum.TOP_RIGHT : HexEdgeEnum.TOP_LEFT);
+                    } else {
+                        // TODO: always do this if that's better
+                        swapAboveBelowSelectionDefaults();
+                    }
+                    if (newSelection != null) {
+                        if (!(newSelection is UnityMapHex)) {
+                            Debug.Log($"Selection is of unexpected type {newSelection.GetType()}!");
+                        } else {
+                            updateSelectedHex((UnityMapHex)newSelection);
+                        }
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.M)) {
+                Debug.Log("Pressed M");
+                if (showHexSelector) {
+                    MapHex newSelection = selectedHexTile.getAdjacentHex(defaultBelowSelection);
+                    if (newSelection == null) {
+                        newSelection = selectedHexTile.getAdjacentHex((defaultBelowSelection == HexEdgeEnum.BOTTOM_LEFT)
+                            ? HexEdgeEnum.BOTTOM_RIGHT : HexEdgeEnum.BOTTOM_LEFT);
+                    } else {
+                        // TODO: always do this if that's better
+                        swapAboveBelowSelectionDefaults();
+                    }
+                    if (newSelection != null) {
+                        if (!(newSelection is UnityMapHex)) {
+                            Debug.Log($"Selection is of unexpected type {newSelection.GetType()}!");
+                        } else {
+                            updateSelectedHex((UnityMapHex)newSelection);
+                        }
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.J)) {
+                Debug.Log("Pressed J");
+                if (showHexSelector) {
+                    MapHex newSelection = selectedHexTile.getAdjacentHex(HexEdgeEnum.LEFT);
+                    if (newSelection != null) {
+                        if (!(newSelection is UnityMapHex)) {
+                            Debug.Log($"Selection is of unexpected type {newSelection.GetType()}!");
+                        } else {
+                            updateSelectedHex((UnityMapHex)newSelection);
+                        }
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.K)) {
+                Debug.Log("Pressed K");
+                if (showHexSelector) {
+                    MapHex newSelection = selectedHexTile.getAdjacentHex(HexEdgeEnum.RIGHT);
+                    if (newSelection != null) {
+                        if (!(newSelection is UnityMapHex)) {
+                            Debug.Log($"Selection is of unexpected type {newSelection.GetType()}!");
+                        } else {
+                            updateSelectedHex((UnityMapHex)newSelection);
+                        }
+                    }
+                }
             }
         }
     }
+
+    private Outline getOutline(UnityMapHex hex) {
+        return hex != null ? hex.gameObject.GetComponent<Outline>() : null;
+    }
+
+    private void updateSelectedHex(UnityMapHex hex) {
+        if (selectedHexTile != null) {
+            getOutline(selectedHexTile).enabled = false;
+        }
+        addOutlineScriptIfNeeded(hex);
+        getOutline(hex).enabled = showHexSelector;
+        selectedHexTile = hex;
+    }
+
+    private void addOutlineScriptIfNeeded(UnityMapHex hex) {
+        Outline outline = hex.gameObject.GetComponent<Outline>();
+        if (outline == null) {
+            outline = hex.gameObject.AddComponent<Outline>();
+        }
+        outline.enabled = showHexSelector;
+    }
+
 
     static HexMapPosition getCenterHexPosition(int mapWidth, int mapHeight) {
         return new HexMapPosition(mapWidth / 2, mapHeight / 2);
@@ -628,6 +750,7 @@ public class HexMapGenerator : MonoBehaviour {
             Debug.Log("Positions before after");
         }
 
+        updateSelectedHex(startHex);
         readyToGenerateMap = true;      
     }
 
