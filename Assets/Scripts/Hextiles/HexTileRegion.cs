@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+// REPRESENTS A CONTIGUOUS GROUP OF LIKE MAP TILES
+
 public class HexTileRegion {
     static int regionIdCounter = 1;
     private static int assignNewRegionId() {

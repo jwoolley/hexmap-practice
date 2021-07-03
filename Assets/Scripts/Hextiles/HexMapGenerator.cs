@@ -43,9 +43,13 @@ public class HexMapGenerator : MonoBehaviour {
         RANDOM_CONNECTED
     }
 
+    // MATERIALS LOGIC (START) ======+=================================================================================
     // used for randomizeRegionTileColors
     // should use regionId as key instead; leaving as-is now for clarity/waiting until regionId type is changed to uuid
-    private static Dictionary<HexTileRegion, Material> REGION_MATERIALS = new Dictionary<HexTileRegion, Material>();
+
+    private static Dictionary<HexTileRegion, Material> REGION_MATERIALS = new Dictionary<HexTileRegion, Material>();    
+    private static Material referenceMaterial;
+
     public static void assignRandomRegionMaterial(HexTileRegion region) {
         if (!REGION_MATERIALS.ContainsKey(region)) {
             Material material = getNewMaterialWithColor(UnityEngine.Random.ColorHSV());
@@ -54,7 +58,6 @@ public class HexMapGenerator : MonoBehaviour {
             Debug.LogWarning($"Tried to assign material for region with existing material (Region: {region.regionId})");
         }
     }
-
 
     public static void assignHexMaterialFromRegion(HexTileRegion region, UnityMapHex hex) {
         if (region == null) {
@@ -68,16 +71,18 @@ public class HexMapGenerator : MonoBehaviour {
             hex.changeMeshMaterial(REGION_MATERIALS[region]);
         }
     }
+    // MATERIALS LOGIC (END) ==========================================================================================
 
+
+    // PHYSICAL MAP CONSTANTS 
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
     float startZOffset = -8.0f;
 
     private Tuple<int, int> mapMaxDimensions;
 
-    List<HexEdgeEnum> _orderedEdges;
     private UnityMapHex[,] hexPositionGrid;
-    private static HexTileRegionGroup hexTileRegionGroup;
+    private static HexTileRegionCatalog hexTileRegionGroup;
 
     private EnqueuedPlacementTile[,] placementGrid;
     List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
@@ -94,14 +99,14 @@ public class HexMapGenerator : MonoBehaviour {
         GenerateHexMap();
     }
     
-    static public Dictionary<UnityMapHex, String> DEBUG_HEX_LABEL_LIST = new Dictionary<UnityMapHex, String>();
+    static public Dictionary<UnityMapHex, string> DEBUG_HEX_LABEL_LIST = new Dictionary<UnityMapHex, string>();
     static private Color debugGuiLabelColor;
 
     static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
     static readonly private Color guiLabelColor = Color.white;
 
+    List<HexEdgeEnum> _orderedEdges;
 
-    private static Material referenceMaterial;
 
     // TODO: add Unity Editor directives (so builds aren't broken by this)
     void OnDrawGizmos() {
@@ -218,13 +223,13 @@ public class HexMapGenerator : MonoBehaviour {
     }
 
     class HexMapPlacementData {
-        public HexMapPlacementData(UnityMapHex[,] positionGrid, HexTileRegionGroup hexTileRegionGroup) {
+        public HexMapPlacementData(UnityMapHex[,] positionGrid, HexTileRegionCatalog hexTileRegionGroup) {
             this.positionGrid = positionGrid;
             this.hexTileRegionGroup = hexTileRegionGroup;
         }
 
         public UnityMapHex[,] positionGrid { get; private set; }
-        public HexTileRegionGroup hexTileRegionGroup { get; private set; }
+        public HexTileRegionCatalog hexTileRegionGroup { get; private set; }
     }
     class EnqueuedPlacementTile {
         public EnqueuedPlacementTile(HexPositionPair referenceHexPosition, HexEdgeEnum placement) {
@@ -718,7 +723,7 @@ public class HexMapGenerator : MonoBehaviour {
         UnityMapHex startHex = new UnityMapHex(Instantiate(HexTilePrefab));
         HexTileColor startColor = randomizeColors ? HexTileColorExtensions.getRandomColor() : HexTileColor.BLUE;
 
-        hexTileRegionGroup = new HexTileRegionGroup(hexPositionGrid, startHex, startColor);
+        hexTileRegionGroup = new HexTileRegionCatalog(hexPositionGrid, startHex, startColor);
 
         generatePlacementPlan(startHex, startColor);
 

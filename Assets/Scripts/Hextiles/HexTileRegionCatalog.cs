@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class HexTileRegionGroup  {
-    public HexTileRegionGroup(MapHex[,] placementArray, MapHex originHex, HexTileColor color) {
+// COLLECTION OF HexTileRegions IN A MAP
+
+public class HexTileRegionCatalog  {
+    public HexTileRegionCatalog(MapHex[,] placementArray, MapHex originHex, HexTileColor color) {
         regions = new HashSet<HexTileRegion>();
         this.placementArray = placementArray;
         addNewRegion(originHex, color);
@@ -14,7 +16,7 @@ public class HexTileRegionGroup  {
         HexEdgeEnum edge, HexTileColor newHexColor) {
 
         if (!this.containsHex(referenceHex)) {
-            throw new Exception("Can't find reference hex in region group");
+            throw new Exception("Can't find reference hex in region catalog");
         }
         referenceHex.setAdjacentHex(edge, newHex);
 

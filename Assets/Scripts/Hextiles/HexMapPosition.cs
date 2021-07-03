@@ -6,6 +6,8 @@ public class HexMapPosition : Tuple<int, int> {
 
     public override bool Equals(object obj) => this.Equals(obj as HexMapPosition);
 
+
+
     public bool Equals(HexMapPosition obj) {
         return x == obj.x && y == obj.y;
     }
