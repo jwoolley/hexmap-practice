@@ -399,7 +399,7 @@ GameObject:
   - component: {fileID: 1136119306}
   - component: {fileID: 1136119305}
   m_Layer: 0
-  m_Name: Sphere
+  m_Name: MapCenterIndicatorSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -546,12 +546,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1136119304}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.03, y: -1, z: 9.96}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.1062455, y: -7.903862, z: 20.965454}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_Father: {fileID: 1381169071}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1381169069
 GameObject:
@@ -564,7 +564,7 @@ GameObject:
   - component: {fileID: 1381169071}
   - component: {fileID: 1381169070}
   m_Layer: 0
-  m_Name: HexTileGenerator
+  m_Name: HexMapGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -579,14 +579,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1381169069}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e84d22417abb6472c801d5c5ec2a95d4, type: 3}
+  m_Script: {fileID: 11500000, guid: 1b08842143eb64f2da497cd3b4d05cfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HexTilePrefab: {fileID: 9065673002126075789, guid: c66eeaca2bb7f4e7e8f08cfe23775c02,
+  HexTilePrefab: {fileID: 9065673002126075789, guid: 48e8e7a2d40c842d789545bc635ecb9e,
     type: 3}
-  numHexRingLevels: 6
-  tilePlacementMode: 1
-  freeEdgeWeight: 2.3
+  numHexRingLevels: 4
+  tilePlacementMode: 0
+  freeEdgeWeight: 1
   bufferCellsForRandMode: 2
   randomizeColors: 1
   randomizeRegionTileColors: 0
@@ -602,7 +602,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.0762453, y: 6.903862, z: -11.005455}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1136119308}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

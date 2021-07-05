@@ -73,11 +73,20 @@ public class HexMapGenerator : MonoBehaviour {
     }
     // MATERIALS LOGIC (END) ==========================================================================================
 
+    // ANIMATION CONSTANTS
+    const float HEX_FALL_DURATION_INITIAL_TIME = 0.67f;
+    const float HEX_FALL_DURATION_FINAL_TIME = 0.33f;
 
     // PHYSICAL MAP CONSTANTS 
     readonly float hexTileOffset_X = 1.76f;
     readonly float hexTileOffset_Y = 1.52f;
     float startZOffset = -8.0f;
+
+    // DEBUG UI VARIABLES
+    static public Dictionary<UnityMapHex, string> DEBUG_HEX_LABEL_LIST = new Dictionary<UnityMapHex, string>();
+    static private Color debugGuiLabelColor;
+    static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
+    static readonly private Color guiLabelColor = Color.white;
 
     private Tuple<int, int> mapMaxDimensions;
 
@@ -86,6 +95,9 @@ public class HexMapGenerator : MonoBehaviour {
 
     private EnqueuedPlacementTile[,] placementGrid;
     List<EnqueuedPlacementTile> enqueuedTiles = new List<EnqueuedPlacementTile>();
+    List<HexEdgeEnum> _orderedEdges;
+
+    static Dictionary<HexTileColor, Material> referenceHexes;
 
     //readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStop4();
     readonly TimeTransformer timeTransformer = new TimeTransformerSmoothStep2();
@@ -98,17 +110,7 @@ public class HexMapGenerator : MonoBehaviour {
         _generatorInstance = this;
         GenerateHexMap();
     }
-    
-    static public Dictionary<UnityMapHex, string> DEBUG_HEX_LABEL_LIST = new Dictionary<UnityMapHex, string>();
-    static private Color debugGuiLabelColor;
 
-    static private List<UnityMapHex> labelHexes = new List<UnityMapHex>();
-    static readonly private Color guiLabelColor = Color.white;
-
-    List<HexEdgeEnum> _orderedEdges;
-
-
-    // TODO: add Unity Editor directives (so builds aren't broken by this)
     void OnDrawGizmos() {
         #if UNITY_EDITOR
         if (showHexGuiDebugText) {
@@ -152,8 +154,6 @@ public class HexMapGenerator : MonoBehaviour {
     static Material getMaterial(HexTileColor color) {
         return referenceHexes[color];
     }
-
-    static Dictionary<HexTileColor, Material> referenceHexes;
 
     void intializeReferenceHexMap() {
         referenceHexes = new Dictionary<HexTileColor, Material>();
@@ -213,6 +213,12 @@ public class HexMapGenerator : MonoBehaviour {
         newHex.changeMeshMaterial(material);
         return newHex;
     }
+
+    void placeNewHex(UnityMapHex newHex, UnityMapHex originHex, HexMapPosition position) {
+        
+    }
+
+
 
     private AnimatableMapHex animateHex(UnityMapHex hex) {
         Vector3 startPos = hex.gameObject.transform.position;
@@ -456,21 +462,6 @@ public class HexMapGenerator : MonoBehaviour {
 
     static HexMapPosition getCenterHexPosition(int mapWidth, int mapHeight) {
         return new HexMapPosition(mapWidth / 2, mapHeight / 2);
-    }
-
-    class HexPositionPair {
-        public HexPositionPair(UnityMapHex hex, HexMapPosition position) {
-            this.hex = hex;
-            this.position = position;
-        }
-
-        public void setHex(UnityMapHex hex) {
-            this.hex = hex;
-        }
-
-        public HexPositionPair(HexPositionPair original) : this(original.hex, original.position) { }
-        public UnityMapHex hex { get; private set; }
-        public HexMapPosition position { get; private set; }
     }
 
     // private const int NUM_HEXES = 1 + 6 + 12 + 18;
@@ -758,7 +749,4 @@ public class HexMapGenerator : MonoBehaviour {
         updateSelectedHex(startHex);
         readyToGenerateMap = true;      
     }
-
-    const float HEX_FALL_DURATION_INITIAL_TIME = 0.67f;
-    const float HEX_FALL_DURATION_FINAL_TIME = 0.33f;
 }
