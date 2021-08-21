@@ -1,14 +1,14 @@
 ﻿<Properties StartupConfiguration="{A5D15A1B-55E8-0474-87A7-191828B83106}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Hextiles/UnityMapHex.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Hextiles/HexMapGenerator.cs">
     <Files>
-      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="465" Column="6" />
-      <File FileName="Assets/Scripts/HexMapPosition.cs" Line="10" Column="1" />
-      <File FileName="Assets/Scripts/MapHex.cs" Line="18" Column="1" />
+      <File FileName="Assets/Scripts/HexMapGenerator.cs" Line="278" Column="37" />
+      <File FileName="Assets/Scripts/Hextiles/UnityMapHex.cs" Line="75" Column="105" />
+      <File FileName="Assets/Scripts/HexMapPosition.cs" Line="4" Column="45" />
+      <File FileName="Assets/Scripts/MapHex.cs" Line="68" Column="34" />
       <File FileName="Assets/Scripts/Hextiles/HexTileRegionCatalog.cs" Line="6" Column="32" />
       <File FileName="Assets/Scripts/Hextiles/HexTileRegion.cs" Line="7" Column="1" />
-      <File FileName="Assets/Scripts/Hextiles/HexEdgeEnum.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Hextiles/HexEdgeEnum.cs" Line="32" Column="50" />
       <File FileName="Assets/Scripts/Hextiles/HexTileColor.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Hextiles/UnityMapHex.cs" Line="70" Column="33" />
       <File FileName="Assets/Scripts/CameraController.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Hextiles/NewClass.cs" Line="1" Column="1" />
     </Files>
@@ -20,7 +20,11 @@
               <Node name="OutlineEffect" expanded="True">
                 <Node name="OutlineEffect" expanded="True" />
               </Node>
-              <Node name="Scripts" expanded="True" />
+              <Node name="Scripts" expanded="True">
+                <Node name="Hextiles" expanded="True">
+                  <Node name="HexMapGenerator.cs" selected="True" />
+                </Node>
+              </Node>
             </Node>
           </Node>
         </State>

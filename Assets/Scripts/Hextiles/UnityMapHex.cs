@@ -72,14 +72,14 @@ public class UnityMapHex : MapHex {
 
     // TODO: test w/ origin tile at center of map, then implement w/ origin tile at 0,0
     // (so origin tile argument should no longer require an index position)
-    public static Vector2 calculateTilePosition(HexMapPosition indexPosition, HexPositionPair originTile) {
-        int dx = originTile.position.x - indexPosition.x;
-        int dy = originTile.position.y - indexPosition.y;
+    public static Vector3 calculateTilePosition(HexPositionPair originTile, HexMapPosition indexPosition) {
+        float dx = originTile.position.x - indexPosition.x;
+        float dy = originTile.position.y - indexPosition.y - (indexPosition.y % 2 == 0 ? 0.5f : 0f); // this assumes originTile.y is even; should this be generalized?
 
-        float x = dx * (originTile.position.x + hexTileOffset_X);
-        float y = dy * (originTile.position.y + ROOT_3 * getSideLength());
+        float x = originTile.hex.gameObject.transform.position.x + (dx * getMinorDiameter());
+        float y = originTile.hex.gameObject.transform.position.y + (dy * getMinorDiameter());
 
-        return new Vector2();
+        return new Vector3(x, y, originTile.hex.gameObject.transform.position.z);
     }
 
     public GameObject gameObject { get; set; }
